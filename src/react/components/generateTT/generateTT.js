@@ -12,6 +12,10 @@ import Select from '@material-ui/core/Select';
 import TextField from '@material-ui/core/TextField';
 import Autocomplete from '@material-ui/lab/Autocomplete';
 import Typography from '@material-ui/core/Typography';
+import Accordion from '@material-ui/core/Accordion';
+import AccordionSummary from '@material-ui/core/AccordionSummary';
+import AccordionDetails from '@material-ui/core/AccordionDetails';
+import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 
 import Table from './Table';
 import Pagination from './Pagination';
@@ -21,6 +25,7 @@ import EditSchedule from './EditSchedule';
 
 import { channels } from '../../../shared/constants';
 const { ipcRenderer } = window.require('electron');
+
 
 const useStyles = makeStyles((theme) => ({
     row: {
@@ -53,7 +58,10 @@ const WorkingHours = () => {
     const [schedulesPerPage] = useState(3);
     const [selected, setSelected] = useState('');
     const [editable, setEditable] = useState('');
-    const [value, setValue] = React.useState(0);
+    const [buildings, setBuildings] = useState([]);
+    const [locations, setLocations] = useState([]);
+    const [buildingID, setBuildingID] = React.useState(null);
+    const [tabVal, setTabVal] = React.useState(0);
     const [state, setState] = React.useState({
         age: '',
         name: 'hai',
@@ -82,13 +90,33 @@ const WorkingHours = () => {
         setLoading(false);
         childRef.current.resetSelected();
     }
+    const fetchBuildings = async () => {
+        ipcRenderer.send(channels.LOAD_BUILDINGS);
 
+        ipcRenderer.on(channels.LOAD_BUILDINGS, (event, arg) => {
+            ipcRenderer.removeAllListeners(channels.LOAD_BUILDINGS);
+            const bs = arg;
+            setBuildings(bs);
+        });
+    }
+    const fetchLocations = async () => {
+        setLoading(true);
+        await ipcRenderer.send(channels.LOAD_ROOMS);
 
+        ipcRenderer.on(channels.LOAD_ROOMS, (event, arg) => {
+            ipcRenderer.removeAllListeners(channels.LOAD_ROOMS);
+            const rs = arg;
+            setLocations(rs);
+        });
+        setLoading(false);
+    }
+   
 
     // useeffect => runs when mounted and also when content gets updated
     useEffect(() => {
         fetchSchedules();
-
+        fetchBuildings();
+        fetchLocations();
     }, []);
 
     // refresh table
@@ -104,7 +132,7 @@ const WorkingHours = () => {
         setEditable(edit);
     }
     const handleChange = (event, newValue) => {
-        setValue(newValue);
+        setTabVal(newValue);
     };
     function StudentTT(props) {
         return <Paper className={classes.root}>
@@ -161,19 +189,20 @@ const WorkingHours = () => {
             <div className={classes.row}>
                 <Autocomplete
                     id="combo-box-demo"
-                    options={top100Films}
+                    options={buildings.map(option => option.bID)}
                     size="small"
-                    getOptionLabel={(option) => option.title}
+                    onChange={(_, val) => {setBuildingID(val);}}
+                    value={buildingID}
                     style={{ width: '20%', margin: 5 }}
                     renderInput={(params) => <TextField  {...params} label="Building" variant="outlined" />}
                 />
                 <Autocomplete
                     id="combo-box-demo"
-                    options={top100Films}
+                    options={locations.filter(b=>b.bID==buildingID)}
                     size="small"
-                    getOptionLabel={(option) => option.title}
+                    getOptionLabel={(option) => option.rID}
                     style={{ width: '20%', margin: 5 }}
-                    renderInput={(params) => <TextField  {...params} label="Room" variant="outlined" />}
+                    renderInput={(params) => <TextField  {...params} label="Room"  variant="outlined" />}
                 />
                 <Button variant="contained" color="primary" style={{ marginLeft: '50%'}} >
                     Print
@@ -183,9 +212,9 @@ const WorkingHours = () => {
     }
     function Greeting(props) {
         const isLoggedIn = props.isLoggedIn;
-        if (value == 0) {
+        if (tabVal == 0) {
             return <StudentTT />;
-        } else if (value == 1) {
+        } else if (tabVal == 1) {
             return <LecturerTT />;
         } else {
             return <RoomTT />;
@@ -208,7 +237,7 @@ const WorkingHours = () => {
 
             <Paper className={classes.root}>
                 <Tabs
-                    value={value}
+                    value={tabVal}
                     onChange={handleChange}
                     indicatorColor="primary"
                     textColor="primary"
@@ -237,7 +266,22 @@ const WorkingHours = () => {
                 />
             </div>
 
-            <Greeting isLoggedIn={value} />
+            <Greeting isLoggedIn={tabVal} />
+            <Accordion>
+        <AccordionSummary
+          expandIcon={<ExpandMoreIcon />}
+          aria-controls="panel1a-content"
+          id="panel1a-header"
+        >
+          <Typography className={classes.heading}>Conflicts</Typography>
+        </AccordionSummary>
+        <AccordionDetails>
+          <Typography>
+            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse malesuada lacus ex,
+            sit amet blandit leo lobortis eget.
+          </Typography>
+        </AccordionDetails>
+      </Accordion>
         </div>
     )
 }
