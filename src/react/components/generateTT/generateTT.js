@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { makeStyles } from '@material-ui/core/styles';
-import { Button, IconButton } from '@material-ui/core';
+import { Button, IconButton,MenuItem } from '@material-ui/core';
 import RefreshIcon from '@material-ui/icons/Refresh';
 import Paper from '@material-ui/core/Paper';
 import Tabs from '@material-ui/core/Tabs';
@@ -16,7 +16,7 @@ import Accordion from '@material-ui/core/Accordion';
 import AccordionSummary from '@material-ui/core/AccordionSummary';
 import AccordionDetails from '@material-ui/core/AccordionDetails';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
-
+import { DataGrid } from '@material-ui/data-grid';
 import Table from './Table';
 import Pagination from './Pagination';
 import AddSchedule from './AddSchedule';
@@ -24,6 +24,7 @@ import DeleteSchedule from './DeleteSchedule';
 import EditSchedule from './EditSchedule';
 
 import { channels } from '../../../shared/constants';
+
 const { ipcRenderer } = window.require('electron');
 
 
@@ -46,22 +47,33 @@ const useStyles = makeStyles((theme) => ({
     }
 }))
 
-const createData = (_id, dayCount, workingDays, stime, duration, wtime) => {
-    return { _id, dayCount, workingDays, stime, duration, wtime };
-}
+// const createData = (_id, dayCount, workingDays, stime, duration, wtime) => {
+//     return { _id, dayCount, workingDays, stime, duration, wtime };
+// }
+
+
 
 const WorkingHours = () => {
     const classes = useStyles();
-    const [schedules, setSchedules] = useState([]);
+    const [schedule, setSchedule] = useState([]);
     const [loading, setLoading] = useState(false);
     const [currentPage, setCurrentPage] = useState(1);
     const [schedulesPerPage] = useState(3);
     const [selected, setSelected] = useState('');
     const [editable, setEditable] = useState('');
     const [buildings, setBuildings] = useState([]);
+    const [sessions, setSessions] = useState([]);
     const [locations, setLocations] = useState([]);
+    const [lecturers, setLecturers] = useState([]);
+    const [students, setStudents] = useState([]);
     const [buildingID, setBuildingID] = React.useState(null);
+    const [lecturer, setLecturer] = React.useState(null);
+    const [year, setYear] = React.useState(null);
+    const [programme, setProgramme] = React.useState(null);
+    const [groupId, setGroupId] = React.useState(null);
     const [tabVal, setTabVal] = React.useState(0);
+    const [searchVal, setSearchVal] = React.useState('');
+
     const [state, setState] = React.useState({
         age: '',
         name: 'hai',
@@ -70,98 +82,155 @@ const WorkingHours = () => {
     // get current Schedules
     const indexOfLastSchedule = currentPage * schedulesPerPage;
     const indexOfFirstSchedule = indexOfLastSchedule - schedulesPerPage;
-    const currentSchedules = schedules.slice(indexOfFirstSchedule, indexOfLastSchedule);
+    const years=["1","2","3","4"];
+
 
     // change page
     const paginate = (pageNumber) => {
         setCurrentPage(pageNumber);
     }
 
-    const fetchSchedules = async () => {
-        setLoading(true);
-        await ipcRenderer.send(channels.LOAD_SCHEDULE);
 
-        ipcRenderer.on(channels.LOAD_SCHEDULE, (event, arg) => {
-            ipcRenderer.removeAllListeners(channels.LOAD_SCHEDULE);
-            const sh = arg;
-            const shArray = sh.map(s => createData(s._id, s.dayCount, s.workingDays, s.stime, s.duration, s.wtime))
-            setSchedules(shArray);
-        });
-        setLoading(false);
-        childRef.current.resetSelected();
-    }
     const fetchBuildings = async () => {
+        var bs = [];
         ipcRenderer.send(channels.LOAD_BUILDINGS);
 
-        ipcRenderer.on(channels.LOAD_BUILDINGS, (event, arg) => {
+        ipcRenderer.on(channels.LOAD_BUILDINGS, async (event, arg) => {
             ipcRenderer.removeAllListeners(channels.LOAD_BUILDINGS);
-            const bs = arg;
+            bs = arg;
+
             setBuildings(bs);
+
+
         });
+
+
     }
     const fetchLocations = async () => {
-        setLoading(true);
+
         await ipcRenderer.send(channels.LOAD_ROOMS);
 
         ipcRenderer.on(channels.LOAD_ROOMS, (event, arg) => {
             ipcRenderer.removeAllListeners(channels.LOAD_ROOMS);
             const rs = arg;
             setLocations(rs);
+
         });
-        setLoading(false);
+
     }
-   
+    const fetchLecturers = async () => {
+
+        await ipcRenderer.send(channels.LOAD_LECTURERS);
+
+        ipcRenderer.on(channels.LOAD_LECTURERS, (event, arg) => {
+            ipcRenderer.removeAllListeners(channels.LOAD_LECTURERS);
+            const rs = arg;
+            setLecturers(rs);
+
+        });
+
+    }
+    const fetchSchedule = async () => {
+
+        await ipcRenderer.send(channels.LOAD_SCHEDULE);
+
+        ipcRenderer.on(channels.LOAD_SCHEDULE, (event, arg) => {
+            ipcRenderer.removeAllListeners(channels.LOAD_SCHEDULE);
+            const rs = arg;
+            setSchedule(rs);
+            // console.log(schedule);
+        });
+        setLoading(true);
+    }
+    const fetchStudents = async () => {
+
+        await ipcRenderer.send(channels.LOAD_STUDENTS_FOR_TT);
+
+        ipcRenderer.on(channels.LOAD_STUDENTS_FOR_TT, (event, arg) => {
+            ipcRenderer.removeAllListeners(channels.LOAD_STUDENTS_FOR_TT);
+            const rs = arg;
+            setStudents(rs);
+        });
+
+    }
+    const fetchSessions = async () => {
+
+        await ipcRenderer.send(channels.LOAD_SESSIONS);
+
+        ipcRenderer.on(channels.LOAD_SESSIONS, (event, arg) => {
+            ipcRenderer.removeAllListeners(channels.LOAD_SESSIONS);
+            const rs = arg;
+            setSessions(rs);
+
+        });
+
+    }
+
+
+
 
     // useeffect => runs when mounted and also when content gets updated
     useEffect(() => {
-        fetchSchedules();
+
         fetchBuildings();
         fetchLocations();
+        fetchLecturers();
+        fetchStudents();
+        fetchSessions();
+        fetchSchedule();
+
     }, []);
 
-    // refresh table
+
     const scheduleUpdated = () => {
-        fetchSchedules();
+        // fetchSchedule();
     }
 
+
     // Schedule selection changed
-    const handleRadioChange = (value) => {
-        setSelected(value);
-        let tSchedules = schedules;
-        const edit = tSchedules.filter(l => (l._id === value))[0];
-        setEditable(edit);
-    }
+
     const handleChange = (event, newValue) => {
         setTabVal(newValue);
     };
     function StudentTT(props) {
         return <Paper className={classes.root}>
             <div className={classes.row}>
+
                 <Autocomplete
                     id="combo-box-demo"
-                    options={top100Films}
+                    options={years}
                     size="small"
-                    getOptionLabel={(option) => option.title}
-                    style={{ width: '20%', margin: 5}}
+                    onChange={(_, val) => {setYear(val);}}
+                     value={year}
+                    style={{ width: '20%', margin: 5 }}
                     renderInput={(params) => <TextField  {...params} label="year & Semester" variant="outlined" />}
                 />
                 <Autocomplete
                     id="combo-box-demo"
-                    options={top100Films}
+                    options={students.filter(b => b.year == year)}
                     size="small"
-                    getOptionLabel={(option) => option.title}
+                    onChange={(_, val) => { setProgramme(val); }}
+                    getOptionLabel={(option) => option.programme}
+                    value={programme}
                     style={{ width: '20%', margin: 5 }}
                     renderInput={(params) => <TextField  {...params} label="Program" variant="outlined" />}
                 />
+                
                 <Autocomplete
                     id="combo-box-demo"
-                    options={top100Films}
+                    options={students.filter(b => b.year == year).map(r=>r.groupIdLabel)}
                     size="small"
-                    getOptionLabel={(option) => option.title}
+                    //getOptionLabel={(option) => option.group}
+                   
                     style={{ width: '20%', margin: 5 }}
                     renderInput={(params) => <TextField  {...params} label="Group" variant="outlined" />}
                 />
-                <Button variant="contained" color="primary" style={{ marginLeft: '30%'}}>
+                <Button variant="contained" color="primary" style={{ marginLeft: '15%' }}>
+                
+                    View
+                </Button>
+                <Button variant="contained" color="primary" >
+                
                     Print
                 </Button>
             </div>
@@ -170,14 +239,19 @@ const WorkingHours = () => {
     function LecturerTT(props) {
         return <Paper className={classes.root}>
             <div className={classes.row}>
+
                 <Autocomplete
                     id="combo-box-demo"
-                    options={top100Films}
+                    options={lecturers.map(option => option.name)}
                     size="small"
-                    getOptionLabel={(option) => option.title}
+                    onChange={(_, val) => { setLecturer(val); }}
+                    value={lecturer}
                     style={{ width: '20%', margin: 5 }}
                     renderInput={(params) => <TextField  {...params} label="Lecurer" variant="outlined" />}
                 />
+                <Button variant="contained" color="primary" onClick="viewTable" >
+                    View
+                </Button>
                 <Button variant="contained" color="primary" >
                     Print
                 </Button>
@@ -191,20 +265,23 @@ const WorkingHours = () => {
                     id="combo-box-demo"
                     options={buildings.map(option => option.bID)}
                     size="small"
-                    onChange={(_, val) => {setBuildingID(val);}}
+                    onChange={(_, val) => { setBuildingID(val); }}
                     value={buildingID}
                     style={{ width: '20%', margin: 5 }}
                     renderInput={(params) => <TextField  {...params} label="Building" variant="outlined" />}
                 />
                 <Autocomplete
                     id="combo-box-demo"
-                    options={locations.filter(b=>b.bID==buildingID)}
+                    options={locations.filter(b => b.bID == buildingID)}
                     size="small"
                     getOptionLabel={(option) => option.rID}
                     style={{ width: '20%', margin: 5 }}
-                    renderInput={(params) => <TextField  {...params} label="Room"  variant="outlined" />}
+                    renderInput={(params) => <TextField  {...params} label="Room" variant="outlined" />}
                 />
-                <Button variant="contained" color="primary" style={{ marginLeft: '50%'}} >
+                <Button variant="contained" color="primary" style={{ marginLeft: '25%' }} >
+                    View
+                </Button>
+                <Button variant="contained" color="primary"  >
                     Print
                 </Button>
             </div>
@@ -221,6 +298,8 @@ const WorkingHours = () => {
         }
 
     }
+
+
     return (
         <div className="locations">
 
@@ -229,7 +308,7 @@ const WorkingHours = () => {
                     size="small"
                     color="primary"
                     component="span"
-                    onClick={fetchSchedules}
+
                 >
                     <RefreshIcon />
                 </IconButton>
@@ -250,143 +329,46 @@ const WorkingHours = () => {
             </Paper>
 
             <div className={classes.row}>
-                <Table
-                    schedules={currentSchedules}
-                    loading={loading}
-                    handleRadioChange={handleRadioChange}
-                    ref={childRef}
-                />
+                {
+                    schedule.length > 0 ? <Table
+                        sessions={sessions}
+                        schedule={schedule}
+
+                        scheduleUpdated={scheduleUpdated}
+                    // handleRadioChange={handleRadioChange}
+                    // ref={childRef}
+                    /> : <h1> Loading </h1>
+                }
+
+
+
             </div>
 
             <div className={classes.pagination}>
                 <Pagination
                     schedulesPerPage={schedulesPerPage}
-                    totalSchedules={schedules.length}
                     paginate={paginate}
                 />
             </div>
 
             <Greeting isLoggedIn={tabVal} />
             <Accordion>
-        <AccordionSummary
-          expandIcon={<ExpandMoreIcon />}
-          aria-controls="panel1a-content"
-          id="panel1a-header"
-        >
-          <Typography className={classes.heading}>Conflicts</Typography>
-        </AccordionSummary>
-        <AccordionDetails>
-          <Typography>
-            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse malesuada lacus ex,
-            sit amet blandit leo lobortis eget.
+                <AccordionSummary
+                    expandIcon={<ExpandMoreIcon />}
+                    aria-controls="panel1a-content"
+                    id="panel1a-header"
+                >
+                    <Typography className={classes.heading}>Conflicts</Typography>
+                </AccordionSummary>
+                <AccordionDetails>
+                    <Typography>
+                        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse malesuada lacus ex,
+                        sit amet blandit leo lobortis eget.
           </Typography>
-        </AccordionDetails>
-      </Accordion>
+                </AccordionDetails>
+            </Accordion>
         </div>
     )
 }
-// Top 100 films as rated by IMDb users. http://www.imdb.com/chart/top
-const top100Films = [
-    { title: 'The Shawshank Redemption', year: 1994 },
-    { title: 'The Godfather', year: 1972 },
-    { title: 'The Godfather: Part II', year: 1974 },
-    { title: 'The Dark Knight', year: 2008 },
-    { title: '12 Angry Men', year: 1957 },
-    { title: "Schindler's List", year: 1993 },
-    { title: 'Pulp Fiction', year: 1994 },
-    { title: 'The Lord of the Rings: The Return of the King', year: 2003 },
-    { title: 'The Good, the Bad and the Ugly', year: 1966 },
-    { title: 'Fight Club', year: 1999 },
-    { title: 'The Lord of the Rings: The Fellowship of the Ring', year: 2001 },
-    { title: 'Star Wars: Episode V - The Empire Strikes Back', year: 1980 },
-    { title: 'Forrest Gump', year: 1994 },
-    { title: 'Inception', year: 2010 },
-    { title: 'The Lord of the Rings: The Two Towers', year: 2002 },
-    { title: "One Flew Over the Cuckoo's Nest", year: 1975 },
-    { title: 'Goodfellas', year: 1990 },
-    { title: 'The Matrix', year: 1999 },
-    { title: 'Seven Samurai', year: 1954 },
-    { title: 'Star Wars: Episode IV - A New Hope', year: 1977 },
-    { title: 'City of God', year: 2002 },
-    { title: 'Se7en', year: 1995 },
-    { title: 'The Silence of the Lambs', year: 1991 },
-    { title: "It's a Wonderful Life", year: 1946 },
-    { title: 'Life Is Beautiful', year: 1997 },
-    { title: 'The Usual Suspects', year: 1995 },
-    { title: 'Léon: The Professional', year: 1994 },
-    { title: 'Spirited Away', year: 2001 },
-    { title: 'Saving Private Ryan', year: 1998 },
-    { title: 'Once Upon a Time in the West', year: 1968 },
-    { title: 'American History X', year: 1998 },
-    { title: 'Interstellar', year: 2014 },
-    { title: 'Casablanca', year: 1942 },
-    { title: 'City Lights', year: 1931 },
-    { title: 'Psycho', year: 1960 },
-    { title: 'The Green Mile', year: 1999 },
-    { title: 'The Intouchables', year: 2011 },
-    { title: 'Modern Times', year: 1936 },
-    { title: 'Raiders of the Lost Ark', year: 1981 },
-    { title: 'Rear Window', year: 1954 },
-    { title: 'The Pianist', year: 2002 },
-    { title: 'The Departed', year: 2006 },
-    { title: 'Terminator 2: Judgment Day', year: 1991 },
-    { title: 'Back to the Future', year: 1985 },
-    { title: 'Whiplash', year: 2014 },
-    { title: 'Gladiator', year: 2000 },
-    { title: 'Memento', year: 2000 },
-    { title: 'The Prestige', year: 2006 },
-    { title: 'The Lion King', year: 1994 },
-    { title: 'Apocalypse Now', year: 1979 },
-    { title: 'Alien', year: 1979 },
-    { title: 'Sunset Boulevard', year: 1950 },
-    { title: 'Dr. Strangelove or: How I Learned to Stop Worrying and Love the Bomb', year: 1964 },
-    { title: 'The Great Dictator', year: 1940 },
-    { title: 'Cinema Paradiso', year: 1988 },
-    { title: 'The Lives of Others', year: 2006 },
-    { title: 'Grave of the Fireflies', year: 1988 },
-    { title: 'Paths of Glory', year: 1957 },
-    { title: 'Django Unchained', year: 2012 },
-    { title: 'The Shining', year: 1980 },
-    { title: 'WALL·E', year: 2008 },
-    { title: 'American Beauty', year: 1999 },
-    { title: 'The Dark Knight Rises', year: 2012 },
-    { title: 'Princess Mononoke', year: 1997 },
-    { title: 'Aliens', year: 1986 },
-    { title: 'Oldboy', year: 2003 },
-    { title: 'Once Upon a Time in America', year: 1984 },
-    { title: 'Witness for the Prosecution', year: 1957 },
-    { title: 'Das Boot', year: 1981 },
-    { title: 'Citizen Kane', year: 1941 },
-    { title: 'North by Northwest', year: 1959 },
-    { title: 'Vertigo', year: 1958 },
-    { title: 'Star Wars: Episode VI - Return of the Jedi', year: 1983 },
-    { title: 'Reservoir Dogs', year: 1992 },
-    { title: 'Braveheart', year: 1995 },
-    { title: 'M', year: 1931 },
-    { title: 'Requiem for a Dream', year: 2000 },
-    { title: 'Amélie', year: 2001 },
-    { title: 'A Clockwork Orange', year: 1971 },
-    { title: 'Like Stars on Earth', year: 2007 },
-    { title: 'Taxi Driver', year: 1976 },
-    { title: 'Lawrence of Arabia', year: 1962 },
-    { title: 'Double Indemnity', year: 1944 },
-    { title: 'Eternal Sunshine of the Spotless Mind', year: 2004 },
-    { title: 'Amadeus', year: 1984 },
-    { title: 'To Kill a Mockingbird', year: 1962 },
-    { title: 'Toy Story 3', year: 2010 },
-    { title: 'Logan', year: 2017 },
-    { title: 'Full Metal Jacket', year: 1987 },
-    { title: 'Dangal', year: 2016 },
-    { title: 'The Sting', year: 1973 },
-    { title: '2001: A Space Odyssey', year: 1968 },
-    { title: "Singin' in the Rain", year: 1952 },
-    { title: 'Toy Story', year: 1995 },
-    { title: 'Bicycle Thieves', year: 1948 },
-    { title: 'The Kid', year: 1921 },
-    { title: 'Inglourious Basterds', year: 2009 },
-    { title: 'Snatch', year: 2000 },
-    { title: '3 Idiots', year: 2009 },
-    { title: 'Monty Python and the Holy Grail', year: 1975 },
-];
 
 export default WorkingHours

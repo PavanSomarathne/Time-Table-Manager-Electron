@@ -23,7 +23,7 @@ const useStyles = makeStyles((theme) => ({
     },
 }))
 
-const LocationsTable = ({ locations, loading, handleRadioChange }) => {
+const LocationsTable = ({ locations, loading, handleRadioChange,scheduleUpdated}) => {
     const classes = useStyles();
     const [selectedValue, setSelectedValue] = React.useState('');
 

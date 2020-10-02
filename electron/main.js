@@ -7,6 +7,10 @@ const connection = require('./connection')
 const LocationDao = require('./LocationDao')
 const SubjectDao = require('./SubjectDao')
 const ScheduleDao = require('./ScheduleDao')
+const LecturerDao = require('./LecturerDao')
+const StudentDao = require('./StudentDao')
+const SessionDao = require('./SessionDao')
+const TagDao = require('./TagDao')
 
 let win
 
@@ -291,14 +295,15 @@ ipcMain.on(channels.SEARCH_SCHEDULE, async (event, arg) => {
     await ScheduleDao.searchSchedules(keyword, function (sh) {
         const shArray = sh.map(r => {
             const dayCount = r.working_days_count
-            const workingDays = r.Working_days
-            const hrs = r.working_time_hrs
-            const mins = r.Working_time_mins
+            const workingDays = r.working_days
+            const stime = r.starting_time
             const duration = r.Working_duration
+            const wtime = r.Working_time
             const _id = r._id.toString()
-            return ({ _id, dayCount, workingDays,hrs,mins, duration })
+           
+            return ({_id, dayCount, workingDays,stime, duration,wtime })
         })
-        event.sender.send(channels.SEARCH_ROOMS, shArray)
+        event.sender.send(channels.SEARCH_SCHEDULE, shArray)
     })
 })
 
@@ -319,5 +324,167 @@ ipcMain.on(channels.EDIT_SCHEDULE, async (event, arg) => {
         event.sender.send(channels.EDIT_SCHEDULE, {
             success: success
         })
+    })
+})
+
+//lecturer
+ipcMain.on(channels.LOAD_LECTURERS, async (event) => {
+    await LecturerDao.loadLecturers(function (rs) {
+        const rsArray = rs.map(r => {
+            const eId = r.eId
+            const name = r.name
+            const faculty = r.faculty
+            const dep = r.dep
+            const center = r.center
+            const building = r.building
+            const level = r.level
+            const rank = r.rank
+            const id = r._id.toString()
+            return ({ eId, name, faculty, dep, center, building, level, rank, id })
+        })
+        event.sender.send(channels.LOAD_LECTURERS, rsArray)
+    })
+})
+
+ipcMain.on(channels.ADD_LECTURER, async (event, arg) => {
+    const { eId, name, faculty, dep, center, building, level, rank } = arg;
+    await LecturerDao.addLecturer(eId, name, faculty, dep, center, building, level, rank, function (b) {
+        if (b)
+            event.sender.send(channels.ADD_LECTURER, {
+                success: true
+            })
+        else
+            event.sender.send(channels.ADD_LECTURER, {
+                success: false
+            })
+    })
+})
+
+ipcMain.on(channels.DELETE_LECTURERS, async (event, arg) => {
+    const { selected } = arg
+    await LecturerDao.deleteLecturer(selected, function (r) {
+        const { success } = r
+        event.sender.send(channels.DELETE_LECTURERS, {
+            success: success
+        })
+    })
+})
+
+ipcMain.on(channels.EDIT_LECTURERS, async (event, arg) => {
+    const { eId, name, faculty, dep, center, building, level, rank, id } = arg
+    await LecturerDao.editLecturer(eId, name, faculty, dep, center, building, level, rank, id, function (r) {
+        const { success } = r
+        event.sender.send(channels.EDIT_LECTURERS, {
+            success: success
+        })
+    })
+})
+
+//sessions tags
+ipcMain.on(channels.LOAD_SESSIONS, async (event) => {
+    await SessionDao.loadSessions(function (rs) {
+        const subArray = rs.map(r => {
+            const lecName = r.lecName
+            const tag = r.tag
+            const subName = r.subName
+            const subCode = r.subCode
+            const groupIdSub = r.groupIdSub
+            const studentCount = r.studentCount
+            const Duration = r.Duration
+            const id = r._id.toString()
+            return ({ lecName, tag, subName, subCode, groupIdSub, studentCount, Duration, id })
+        })
+        event.sender.send(channels.LOAD_SESSIONS, subArray)
+    })
+})
+
+ipcMain.on(channels.ADD_SESSION, async (event, arg) => {
+    const { lecNames, tag, subName, subCode, groupIdSub, studentCount, Duration } = arg
+    await SessionDao.addSession
+    (lecNames, tag, subName, subCode, groupIdSub, studentCount, Duration, function (r) {
+        if (r)
+            event.sender.send(channels.ADD_SESSION, {
+                success: true
+            })
+        else
+            event.sender.send(channels.ADD_SESSION, {
+                success: false
+            })
+    })
+})
+
+ipcMain.on(channels.DELETE_SESSION, async (event, arg) => {
+    const { selected } = arg
+    await SessionDao.deleteSession(selected, function (r) {
+        const { success } = r
+        event.sender.send(channels.DELETE_SESSION, {
+            success: success
+        })
+    })
+})
+
+ipcMain.on(channels.LOAD_TAGS, async (event) => {
+    await TagDao.loadTags(function (rs) {
+        const rsArray = rs.map(r => {
+            const name = r.name
+            const id = r._id.toString()
+            return ({ name, id })
+        })
+        event.sender.send(channels.LOAD_TAGS, rsArray)
+    })
+})
+
+ipcMain.on(channels.SEARCH_SESSIONS, async (event, arg) => {
+    const { keyword } = arg
+    await SessionDao.searchSessions(keyword, function (se) {
+        const seArray = se.map(s => {
+            const lecName = s.lecName
+            const tag = s.tag
+            const subName = s.subName
+            const subCode = s.subCode
+            const groupIdSub = s.groupIdSub
+            const studentCount = s.studentCount
+            const Duration = s.Duration
+            const id = s._id.toString()
+            return ({ lecName, tag, subName, subCode, groupIdSub, studentCount, Duration, id })
+        })
+        event.sender.send(channels.SEARCH_SESSIONS, seArray)
+    })
+})
+
+//students
+
+ipcMain.on(channels.LOAD_STUDENTS_FOR_TT, async (event) => {
+    await StudentDao.loadStudents(function (rs) {
+        const rsArray = rs.map(r => {
+            const year = r.year
+            const sem = r.sem
+            const programme = r.programme
+            const group = r.group
+            const subGroup = r.subGroup
+            const subGroupIdLabel=r.subGroupIdLabel
+            const groupIdLabel= r.groupIdLabel
+            const id = r._id.toString()
+            return ({ year, sem, programme, group, subGroup,subGroupIdLabel,groupIdLabel,id })
+        })
+        event.sender.send(channels.LOAD_STUDENTS_FOR_TT, rsArray)
+    })
+})
+
+//load sessions
+ipcMain.on(channels.LOAD_SESSIONS, async (event) => {
+    await SessionDao.loadSessions(function (rs) {
+        const subArray = rs.map(r => {
+            const lecName = r.lecName
+            const tag = r.tag
+            const subName = r.subName
+            const subCode = r.subCode
+            const groupIdSub = r.groupIdSub
+            const studentCount = r.studentCount
+            const Duration = r.Duration
+            const id = r._id.toString()
+            return ({ lecName, tag, subName, subCode, groupIdSub, studentCount, Duration, id })
+        })
+        event.sender.send(channels.LOAD_SESSIONS, subArray)
     })
 })

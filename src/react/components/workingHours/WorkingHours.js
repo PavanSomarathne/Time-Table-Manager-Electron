@@ -63,8 +63,10 @@ const WorkingHours = () => {
             const sh = arg;
             const shArray = sh.map(s => createData(s._id, s.dayCount,s.workingDays,s.stime,s.duration,s.wtime))
             setSchedules(shArray);
+            
         });
         setLoading(false);
+        console.log(schedules);
         childRef.current.resetSelected();
     }
 
