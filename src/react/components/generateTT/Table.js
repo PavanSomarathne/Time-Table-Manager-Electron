@@ -28,7 +28,7 @@ const TimeTable =forwardRef(({ schedule, loading,sessions ,handleRadioChange },r
     const classes = useStyles();
     const [selectedValue, setSelectedValue] = React.useState('');
     const [workingDays, setWorkingDays] = React.useState([]);
-    const [columns, setColumns] = React.useState([{ field: 'Time', headerName: 'Time', width: 130 }]);
+    const [columns, setColumns] = React.useState(['Time']);
     const [time, setTime] = React.useState([]);
     const [rows, setRows] = React.useState([]);
     const [slots, setSlots] = React.useState(0);
@@ -44,7 +44,6 @@ const TimeTable =forwardRef(({ schedule, loading,sessions ,handleRadioChange },r
     useEffect(() => {
     // if(schedule.count()>0){
       heading();
-    console.log(sessions);
     // }
       
   }, []);
@@ -67,6 +66,12 @@ const getTime = (time) => {
     var strTime = hours + ':' + minutes + ' ' + ampm;
     return strTime;
 }
+const getLine = (x) => {
+    
+    let newText=x.split (' ').map ((item, i) => <p key={i}>{item}</p>);
+    console.log(newText);
+    return newText;
+}
   const heading=()=> {
 
     var workingDays = schedule[0].workingDays.split(',');
@@ -74,8 +79,7 @@ const getTime = (time) => {
     arr1.forEach(data => {
       workingDays.forEach(item => {
         if (data == item) {
-            var col={ field: data, headerName: data, width:130 };
-          setColumns(oldArray => [...oldArray, col]);
+          columns.push(data);
           
         }
       });
@@ -101,12 +105,8 @@ const getTime = (time) => {
     }
     while (startTime.setMinutes(startTime.getMinutes()+ dura) <= endTime)
     {
-       // var dtm=new Date(startTime.getTime() + dura*60000);
-        var col={id: noOfSlots, Time:getTime(startTime) };
-            //setRows(oldArray => ([...oldArray, col]));
-            rows.push(col);
-        //     console.log(noOfSlots);
-        //   setSlots(noOfSlots++);
+       
+            time.push(getTime(startTime))
         
         noOfSlots++;
     }
@@ -116,7 +116,7 @@ const getTime = (time) => {
   
    // rows1.filter(n=>n.id===1).map(n=>{n.Thu='test'});
     //setRows(rows1);
-    console.log(rows);
+
     var arr2d = [ ];
     var sessionCnt = 0;
     let sessionLen = sessions.length;
@@ -124,19 +124,15 @@ const getTime = (time) => {
     var session_copy=sessionList;
     let val = 0;
     let value = 0;
-    let l=sessionLen;
-    for (let i = 0; i < schedule[0].dayCount; i++)
-            {
-              var newArr=[];
-              for (let j = 0; j < noOfSlots; j++)
-              {
+    let l=sessionLen *5;
 
-                newArr.push([]);
-                 
-
-              }
-              arr2d[i] = newArr ;
+      for (let i = 0; i < schedule[0].dayCount; i++) {
+          var newArr = [];
+          for (let j = 0; j < noOfSlots; j++) {
+              newArr.push([]);
           }
+          arr2d[i] = newArr;
+      }
 
         //   for (let i = 0; i < schedule[0].dayCount; i++)
         //     {
@@ -149,202 +145,177 @@ const getTime = (time) => {
         //       }
         //      ;
         //   }
-       
          // console.log(arr2d[0][0].length); 
          // arr2d[0,0].push(sessions[0]);
           //console.log(sessionList[2].Duration );       
 
 
-    do
-            {
-                for (let i = 0; i < schedule[0].dayCount; i++)
-                {
-
-                    for (let j = 0; j < noOfSlots; j++)
-                    {
-                        if (sessionCnt < sessionLen)
-                        {
-                            if (arr2d[i][j].length> 0)//checking aray has values
-                            {
-                                let test = true;
-                                while (test)
-                                {
-                                  arr2d[i][ j].forEach(element => {
-                                    if (sessionCnt < sessionLen && element.groupIdSub==sessionList[sessionCnt].groupIdSub)
-                                    {
-                                        j++;
-                                    }
-                                    else
-                                    {
-                                        test = false;
-                                    }
-                                  });
-   
-                                }
-                                if (sessionCnt < sessionLen)
-                                {
-
-                                    val = (sessionList[sessionCnt].Duration)*60 / dura;
-                                    //for half sessions
-                                    let test1 = true;
-                                    while (test1)
-                                    {
-
-                                        if ((j + val) > noOfSlots)
-                                        {
-                                            //date check for half sessions
-                                            if (i + 1 < schedule[0].dayCount)
-                                            {
-                                                i++;
-                                            }
-
-                                            j = 0;
-                                        }
-                                        else
-                                        {
-                                            test1 = false;
-                                        }
-
-
-                                    }
-                                    //empty session copy
-                                    var testing1=sessionList[sessionCnt];
-                                    // if (session_copy.includes(testing1))
-                                    // {
-                                        
-                                    //     const index1 = session_copy.indexOf(testing1);
-                                    //     session_copy.splice(index1,1);
-                                    // }
-                                    for (let y = 0; y < val; y++)
-                                    {
-
-                                        if ((j + y) < noOfSlots)
-                                        {
-                                            arr2d[i][j + y].push(sessionList[sessionCnt]);
-                                        }
-                                        else
-                                        {
-
-                                            break;
-                                        }
-
-
-                                    }
-                                    j = j + val - 1;
-
-
-                                    sessionCnt++;
-
-
-
-                                }
-
-                            }
-                            else
-                            {
-
-                                let val1 = 0;
-                                //empty session copy
-                                var testing1=sessionList[sessionCnt];
-                                // if (session_copy.includes(testing1))
-                                // {
-                                //     const index11 = session_copy.indexOf(testing1);
-                                //     session_copy.splice(index11,1);
-                                // }
-                                console.log(sessionList[2].Duration);
-                                val1 = (sessionList[sessionCnt].Duration) * 60 / dura;
-                                //for half sessions
-                                let test1 = true;
-                                while (test1)
-                                {
-
-                                    if ((j + val1) > noOfSlots)
-                                    {
-                                        //date check for half sessions
-                                        if (i + 1 < schedule[0].dayCount)
-                                        {
-                                            i++;
-                                        }
-
-                                        j = 0;
-                                    }
-                                    else
-                                    {
-                                        test1 = false;
-                                    }
-
-
-                                }
-                                for (let y = 0; y < val1; y++)
-                                {
-
-
-                                    if ((j + y) < noOfSlots)
-                                    {
-                                        arr2d[i][j + y].push(sessionList[sessionCnt]);
-                                    }
-
-
-
-                                }
-                                j = j + val1 - 1;
-
-                                sessionCnt++;
-
-                            }
-
-                        }
-                        else
-                        {
-                            break;
-                        }
-                    }
-
-                }
-
-l--;
-
-        } while (l > 0);
-
-        //console.log(rows);
-          
-        //   for (let i = 0; i < schedule[0].dayCount; i++)
-        //     {
-                let i = 0;
-                for (let j = 0; j < noOfSlots; j++)
-                {
-                    
-                    if(arr2d[i, j]!=null){
-                        
-                            //session=session+" "+element.tag;
-                            rows.filter(n=>n.id===j).map(n=>{
-                                var varia=0;
-                                workingDays.forEach(element => {
-                                    let session = "";
-                                    arr2d[varia][ j].forEach(obj => {
-                                        session=session+" "+obj.subName+'\n'+obj.subCode+'\n'+obj.groupIdSub;
-                                    n[element]=session;
-                                })
-                                    varia++;
-                                });
-                               
-                        
-                            })
-                       
-                    
-                    
+      do {
+          for (let i = 0; i < schedule[0].dayCount; i++) {
+              for (let j = 0; j < noOfSlots; j++) {
+                  if (sessionCnt < sessionLen) {
+                      if (arr2d[i][j].length > 0)//checking aray has values
+                      {
+                          let test = true;
+                          while (test) {
+                              arr2d[i][j].forEach(element => {
+                                  if (sessionCnt < sessionLen && element.groupIdSub == sessionList[sessionCnt].groupIdSub) {
+                                      j++;
+                                  }
+                                  else {
+                                      test = false;
+                                  }
+                              });
+                          }
+                          if (sessionCnt < sessionLen) {
+                              val = (sessionList[sessionCnt].Duration) * 60 / dura;
+                              //for half sessions
+                              let test1 = true;
+                              while (test1) {
+                                  if ((j + val) > noOfSlots) {
+                                      //date check for half sessions
+                                      if (i + 1 < schedule[0].dayCount) {
+                                          i++;
+                                      }
+                                      j = 0;
+                                  }
+                                  else {
+                                      test1 = false;
+                                  }
+                              }
+                              //empty session copy
+                              var testing1 = sessionList[sessionCnt];
+                              // if (session_copy.includes(testing1))
+                              // {
+                              //     const index1 = session_copy.indexOf(testing1);
+                              //     session_copy.splice(index1,1);
+                              // }
+                              for (let y = 0; y < val; y++) {
+                                  if ((j + y) < noOfSlots) {
+                                      arr2d[i][j + y].push(sessionList[sessionCnt]);
+                                  }
+                                  else {
+                                      break;
+                                  }
+                              }
+                              j = j + val - 1;
+                              sessionCnt++;
+                          }
+                      }
+                      else {
+                          let val1 = 0;
+                          //empty session copy
+                          var testing1 = sessionList[sessionCnt];
+                          // if (session_copy.includes(testing1))
+                          // {
+                          //     const index11 = session_copy.indexOf(testing1);
+                          //     session_copy.splice(index11,1);
+                          // }
                          
-                }
-            }
-            setMr(rows);
-            console.log(rows);
+                          val1 = (sessionList[sessionCnt].Duration) * 60 / dura;
+                          //for half sessions
+                          let test1 = true;
+                          while (test1) {
+                              if ((j + val1) > noOfSlots) {
+                                  //date check for half sessions
+                                  if (i + 1 < schedule[0].dayCount) {
+                                      i++;
+                                  }
+                                  j = 0;
+                              }
+                              else {
+                                  test1 = false;
+                              }
+                          }
+                          for (let y = 0; y < val1; y++) {
+                              if ((j + y) < noOfSlots) {
+                                  arr2d[i][j + y].push(sessionList[sessionCnt]);
+                              }
+                          }
+                          j = j + val1 - 1;
+                          sessionCnt++;
+                      }
+                  }
+                  else {
+                      break;
+                  }
+              }
+          }
+          l--;
+      } while (l > 0);
+
         
+      let i = 0;
+   
+    console.log(arr2d);
+    var showArr=[];
+    for (var h = 0; h < noOfSlots; h++)
+            {var showArrRow=[];
+                for (var j = 0; j <=schedule[0].dayCount; j++)
+                {
+
+                    
+                    var session = "";
+                    if(j==0){
+                        session=time[h];
+                        
+                    }else{
+                        
+                       if(arr2d[j-1][h]!=null){
+                        arr2d[j-1][h].forEach(element => {
+                            
+                           
+                                session = session + " " +element.subName+ "\n" +element.groupIdSub;
+                            
+                            
+                              //  MainTitle.Content = "Group Id- "+searchVal;
+                        });
+                       }
+                    }
+                    
+                   
+                    showArrRow.push(session);
+                    console.log(showArrRow);
+                }
+                showArr.push(showArrRow);
+            }
+
+            
+        setMr(showArr);
+        console.log(showArr);
   }
    
     return (
-        <div style={{ height: 400, width: '100%' }}>
-        <DataGrid rows={mr} columns={columns}  hideFooter='true' />
-      </div>
+    //     <div style={{ height: 400, width: '100%' }}>
+    //     <DataGrid rows={mr} columns={columns}  hideFooter='true' disableColumnResize='false'   />
+    //   </div>
+    <TableContainer component={Paper}>
+            <Table className={classes.table} aria-label="locations table">
+                <TableHead>
+                    <TableRow>
+                        {
+                            columns.map(col=>(
+                                <TableCell>{col}</TableCell>
+                            ))
+
+                        }
+                        
+                    </TableRow>
+                </TableHead>
+                <TableBody>
+                    {mr.map(row=>(
+                        <TableRow >
+                            {row.map(x=>(
+                                
+                                <TableCell>{getLine(x)}</TableCell>
+                            ))}
+                        </TableRow>
+                    ))}
+                        
+                
+                </TableBody>
+            </Table>
+        </TableContainer>
     )
 })
 

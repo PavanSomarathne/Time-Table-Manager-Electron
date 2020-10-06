@@ -58,3 +58,6 @@ body {
 background-color: #ffffff;
 
 }
+.MuiDataGrid-cell{
+  wordWrap: 'break-word';
+}
