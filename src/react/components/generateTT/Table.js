@@ -1,4 +1,4 @@
-import React,{ forwardRef, useEffect } from 'react';
+import React,{ forwardRef, useEffect,useImperativeHandle,useRef  } from 'react';
 import { makeStyles } from '@material-ui/core/styles';
 import { DataGrid } from '@material-ui/data-grid';
 import Table from '@material-ui/core/Table';
@@ -10,6 +10,7 @@ import TableRow from '@material-ui/core/TableRow';
 import Paper from '@material-ui/core/Paper';
 import Radio from '@material-ui/core/Radio';
 import Typography from '@material-ui/core/Typography';
+import NullError from './NullError';
 
 const useStyles = makeStyles((theme) => ({
     row: {
@@ -24,16 +25,16 @@ const useStyles = makeStyles((theme) => ({
     },
 }))
 const arr1 = [ "Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun" ];
-const TimeTable =forwardRef(({ schedule, loading,sessions ,handleRadioChange },ref) => {
+const TimeTable =forwardRef(({ schedule,sessions,type,students },ref) => {
     const classes = useStyles();
     const [selectedValue, setSelectedValue] = React.useState('');
     const [workingDays, setWorkingDays] = React.useState([]);
-    const [columns, setColumns] = React.useState(['Time']);
+    const [columns, setColumns] = React.useState([]);
     const [time, setTime] = React.useState([]);
     const [rows, setRows] = React.useState([]);
     const [slots, setSlots] = React.useState(0);
     const [mr, setMr] = React.useState([])
-
+    const childRef = useRef();
       
       const rows1 = [
         { id: 1, Mon: 'Snow', Tue: 'Jon', Wed: 'hey',Thu:'' },
@@ -43,7 +44,7 @@ const TimeTable =forwardRef(({ schedule, loading,sessions ,handleRadioChange },r
     
     useEffect(() => {
     // if(schedule.count()>0){
-      heading();
+      //heading();
     // }
       
   }, []);
@@ -67,23 +68,34 @@ const getTime = (time) => {
     return strTime;
 }
 const getLine = (x) => {
-    
-    let newText=x.split (' ').map ((item, i) => <p key={i}>{item}</p>);
-    console.log(newText);
+    let newX=x.split (' ');
+    let newText=x.split ('\n').map ((item, i) =>
+        <p key={i}>{item}</p>
+   );
     return newText;
 }
-  const heading=()=> {
+
+useImperativeHandle(ref, () => ({
+   heading(searchVal){
+
+    if (searchVal==null) {
+        childRef.current.handleClickOpen();
+    }else{
 
     var workingDays = schedule[0].workingDays.split(',');
    
+    while(columns.length > 0) {
+        columns.pop();
+    }
+
+    columns.push('Time');
+
     arr1.forEach(data => {
       workingDays.forEach(item => {
         if (data == item) {
           columns.push(data);
-          
         }
       });
-
     });
 
     //Time slots
@@ -105,12 +117,9 @@ const getLine = (x) => {
     }
     while (startTime.setMinutes(startTime.getMinutes()+ dura) <= endTime)
     {
-       
-            time.push(getTime(startTime))
-        
+        time.push(getTime(startTime))
         noOfSlots++;
     }
-
    setMr(rows)
 
   
@@ -243,8 +252,6 @@ const getLine = (x) => {
           }
           l--;
       } while (l > 0);
-
-        
       let i = 0;
    
     console.log(arr2d);
@@ -253,53 +260,68 @@ const getLine = (x) => {
             {var showArrRow=[];
                 for (var j = 0; j <=schedule[0].dayCount; j++)
                 {
-
-                    
                     var session = "";
                     if(j==0){
                         session=time[h];
-                        
                     }else{
-                        
                        if(arr2d[j-1][h]!=null){
                         arr2d[j-1][h].forEach(element => {
-                            
-                           
-                                session = session + " " +element.subName+ "\n" +element.groupIdSub;
-                            
-                            
-                              //  MainTitle.Content = "Group Id- "+searchVal;
+                                var group="";
+                                students.forEach(ele => {
+                                    if(ele.groupIdLabel===element.groupIdSub){
+                                        group=ele.groupIdLabel;
+                                    }else if(ele.subGroupIdLabel===element.groupIdSub){
+                                        group=ele.groupIdLabel;
+                                    }
+                                    
+                                });
+
+                                if (type == 0 && group == searchVal) 
+                                {
+                                    session = session + " " +element.subName+ "\n" +element.groupIdSub;
+                                   // MainTitle.Content = "Group Id- "+searchVal;
+                                }
+                                else if (type == 1 && element.lecName.includes(searchVal) )
+                                {
+                                    session = session + " " +element.subName+ "\n" +element.groupIdSub;
+                                    //MainTitle.Content = "Mr/Mrs/Ms. " + searchVal;
+                                }
+                                // else if (type == 2 && element.Room != null )
+                                // {
+                                //     if (item.Room.Rid == searchVal)
+                                //     {
+                                //         session = session + " " +element.subName+ "\n" +element.groupIdSub;
+                                //        // MainTitle.Content = "Room Id- "+ searchVal;
+                                //     }    
+                                // }
                         });
                        }
                     }
-                    
-                   
                     showArrRow.push(session);
                     console.log(showArrRow);
                 }
                 showArr.push(showArrRow);
             }
-
-            
         setMr(showArr);
         console.log(showArr);
   }
+}
+}));
    
     return (
-    //     <div style={{ height: 400, width: '100%' }}>
-    //     <DataGrid rows={mr} columns={columns}  hideFooter='true' disableColumnResize='false'   />
-    //   </div>
+       
     <TableContainer component={Paper}>
             <Table className={classes.table} aria-label="locations table">
+            <NullError
+      ref={childRef}
+      />
                 <TableHead>
                     <TableRow>
                         {
                             columns.map(col=>(
                                 <TableCell>{col}</TableCell>
                             ))
-
                         }
-                        
                     </TableRow>
                 </TableHead>
                 <TableBody>
@@ -316,6 +338,7 @@ const getLine = (x) => {
                 </TableBody>
             </Table>
         </TableContainer>
+        
     )
 })
 

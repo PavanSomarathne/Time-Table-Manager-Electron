@@ -19,7 +19,6 @@ import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 import { DataGrid } from '@material-ui/data-grid';
 import Table from './Table';
 import Pagination from './Pagination';
-import AddSchedule from './AddSchedule';
 import DeleteSchedule from './DeleteSchedule';
 import EditSchedule from './EditSchedule';
 
@@ -67,6 +66,7 @@ const WorkingHours = () => {
     const [lecturers, setLecturers] = useState([]);
     const [students, setStudents] = useState([]);
     const [buildingID, setBuildingID] = React.useState(null);
+    const [room, setRoom] = React.useState(null);
     const [lecturer, setLecturer] = React.useState(null);
     const [year, setYear] = React.useState(null);
     const [programme, setProgramme] = React.useState(null);
@@ -161,14 +161,8 @@ const WorkingHours = () => {
             ipcRenderer.removeAllListeners(channels.LOAD_SESSIONS);
             const rs = arg;
             setSessions(rs);
-
         });
-
     }
-
-
-
-
     // useeffect => runs when mounted and also when content gets updated
     useEffect(() => {
 
@@ -186,14 +180,26 @@ const WorkingHours = () => {
         // fetchSchedule();
     }
 
-
     // Schedule selection changed
 
     const handleChange = (event, newValue) => {
         setTabVal(newValue);
     };
     function StudentTT(props) {
-        return <Paper className={classes.root}>
+        return<div> 
+            <div className={classes.row}>
+                {
+                    schedule.length > 0 ? <Table
+                        sessions={sessions}
+                        schedule={schedule}
+                        type={tabVal}
+                        students={students}
+                    // handleRadioChange={handleRadioChange}
+                        ref={childRef}
+                    /> : <h1> Loading </h1>
+                }
+            </div>
+        <Paper className={classes.root}>
             <div className={classes.row}>
 
                 <Autocomplete
@@ -221,23 +227,39 @@ const WorkingHours = () => {
                     options={students.filter(b => b.year == year).map(r=>r.groupIdLabel)}
                     size="small"
                     //getOptionLabel={(option) => option.group}
-                   
+                    onChange={(_, val) => { setGroupId(val); }}
+                    value={groupId}
                     style={{ width: '20%', margin: 5 }}
                     renderInput={(params) => <TextField  {...params} label="Group" variant="outlined" />}
                 />
-                <Button variant="contained" color="primary" style={{ marginLeft: '15%' }}>
-                
+                <Button variant="contained" color="primary" style={{ marginLeft: '17%' }} onClick={()=>childRef.current.heading(groupId)}>
                     View
                 </Button>
                 <Button variant="contained" color="primary" >
-                
                     Print
                 </Button>
             </div>
-        </Paper>;
+        </Paper>
+        </div>;
     }
     function LecturerTT(props) {
-        return <Paper className={classes.root}>
+        return<div>
+            <div className={classes.row}>
+                {
+                    schedule.length > 0 ? <Table
+                        sessions={sessions}
+                        schedule={schedule}
+                        type={tabVal}
+                       
+                    // handleRadioChange={handleRadioChange}
+                     ref={childRef}
+                    /> : <h1> Loading </h1>
+                }
+
+
+
+            </div>
+         <Paper className={classes.root}>
             <div className={classes.row}>
 
                 <Autocomplete
@@ -249,17 +271,33 @@ const WorkingHours = () => {
                     style={{ width: '20%', margin: 5 }}
                     renderInput={(params) => <TextField  {...params} label="Lecurer" variant="outlined" />}
                 />
-                <Button variant="contained" color="primary" onClick="viewTable" >
+                <Button variant="contained" color="primary" onClick="viewTable" style={{ marginLeft: '62%' }} onClick={()=>childRef.current.heading(lecturer)} >
                     View
                 </Button>
                 <Button variant="contained" color="primary" >
                     Print
                 </Button>
             </div>
-        </Paper>;
+        </Paper></div>;
     }
     function RoomTT(props) {
-        return <Paper className={classes.root}>
+        return <div>
+            <div className={classes.row}>
+                {
+                    schedule.length > 0 ? <Table
+                        sessions={sessions}
+                        schedule={schedule}
+                        type={tabVal}
+                       
+                    // handleRadioChange={handleRadioChange}
+                     ref={childRef}
+                    /> : <h1> Loading </h1>
+                }
+
+
+
+            </div>
+        <Paper className={classes.root}>
             <div className={classes.row}>
                 <Autocomplete
                     id="combo-box-demo"
@@ -275,17 +313,20 @@ const WorkingHours = () => {
                     options={locations.filter(b => b.bID == buildingID)}
                     size="small"
                     getOptionLabel={(option) => option.rID}
+                    onChange={(_, val) => { setRoom(val); }}
+                    value={room}
                     style={{ width: '20%', margin: 5 }}
                     renderInput={(params) => <TextField  {...params} label="Room" variant="outlined" />}
                 />
-                <Button variant="contained" color="primary" style={{ marginLeft: '25%' }} >
+                <Button variant="contained" color="primary" style={{ marginLeft: '40%' }} onClick={()=>childRef.current.heading(room)} >
                     View
                 </Button>
                 <Button variant="contained" color="primary"  >
                     Print
                 </Button>
             </div>
-        </Paper>;
+        </Paper>
+        </div>;
     }
     function Greeting(props) {
         const isLoggedIn = props.isLoggedIn;
@@ -302,18 +343,6 @@ const WorkingHours = () => {
 
     return (
         <div className="locations">
-
-            <div className={classes.row}>
-                <IconButton
-                    size="small"
-                    color="primary"
-                    component="span"
-
-                >
-                    <RefreshIcon />
-                </IconButton>
-            </div>
-
             <Paper className={classes.root}>
                 <Tabs
                     value={tabVal}
@@ -328,21 +357,7 @@ const WorkingHours = () => {
                 </Tabs>
             </Paper>
 
-            <div className={classes.row}>
-                {
-                    schedule.length > 0 ? <Table
-                        sessions={sessions}
-                        schedule={schedule}
-
-                        scheduleUpdated={scheduleUpdated}
-                    // handleRadioChange={handleRadioChange}
-                    // ref={childRef}
-                    /> : <h1> Loading </h1>
-                }
-
-
-
-            </div>
+            
 
             <div className={classes.pagination}>
                 <Pagination
