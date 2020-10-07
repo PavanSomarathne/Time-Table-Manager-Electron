@@ -130,7 +130,13 @@ useImperativeHandle(ref, () => ({
     var sessionCnt = 0;
     let sessionLen = sessions.length;
     const sessionList=sessions;
-    var session_copy=sessionList;
+
+    //session copy
+    var session_copy=[];
+    sessionList.forEach(element => {
+        session_copy.push(element);
+    });
+
     let val = 0;
     let value = 0;
     let l=sessionLen *5;
@@ -194,11 +200,11 @@ useImperativeHandle(ref, () => ({
                               }
                               //empty session copy
                               var testing1 = sessionList[sessionCnt];
-                              // if (session_copy.includes(testing1))
-                              // {
-                              //     const index1 = session_copy.indexOf(testing1);
-                              //     session_copy.splice(index1,1);
-                              // }
+                              if (session_copy.includes(testing1))
+                              {
+                                  const index1 = session_copy.indexOf(testing1);
+                                  session_copy.splice(index1,1);
+                              }
                               for (let y = 0; y < val; y++) {
                                   if ((j + y) < noOfSlots) {
                                       arr2d[i][j + y].push(sessionList[sessionCnt]);
@@ -215,11 +221,11 @@ useImperativeHandle(ref, () => ({
                           let val1 = 0;
                           //empty session copy
                           var testing1 = sessionList[sessionCnt];
-                          // if (session_copy.includes(testing1))
-                          // {
-                          //     const index11 = session_copy.indexOf(testing1);
-                          //     session_copy.splice(index11,1);
-                          // }
+                          if (session_copy.includes(testing1))
+                          {
+                              const index11 = session_copy.indexOf(testing1);
+                              session_copy.splice(index11,1);
+                          }
                          
                           val1 = (sessionList[sessionCnt].Duration) * 60 / dura;
                           //for half sessions
@@ -251,7 +257,7 @@ useImperativeHandle(ref, () => ({
               }
           }
           l--;
-      } while (l > 0);
+      } while (session_copy.length > 0);
       let i = 0;
    
     console.log(arr2d);
@@ -266,19 +272,24 @@ useImperativeHandle(ref, () => ({
                     }else{
                        if(arr2d[j-1][h]!=null){
                         arr2d[j-1][h].forEach(element => {
-                                var group="";
-                                students.forEach(ele => {
-                                    if(ele.groupIdLabel===element.groupIdSub){
-                                        group=ele.groupIdLabel;
-                                    }else if(ele.subGroupIdLabel===element.groupIdSub){
-                                        group=ele.groupIdLabel;
+                                
+                                
+
+                                if (type == 0 ) 
+                                {
+                                    var group="";
+                                    students.forEach(ele => {
+                                        if(ele.groupIdLabel===element.groupIdSub){
+                                            group=ele.groupIdLabel;
+                                        }else if(ele.subGroupIdLabel===element.groupIdSub){
+                                            group=ele.groupIdLabel;
+                                        }
+                                        
+                                    });
+                                    if(group == searchVal){
+                                        session = session + " " +element.subName+ "\n" +element.groupIdSub;
                                     }
                                     
-                                });
-
-                                if (type == 0 && group == searchVal) 
-                                {
-                                    session = session + " " +element.subName+ "\n" +element.groupIdSub;
                                    // MainTitle.Content = "Group Id- "+searchVal;
                                 }
                                 else if (type == 1 && element.lecName.includes(searchVal) )
