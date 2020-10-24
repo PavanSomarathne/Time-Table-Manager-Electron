@@ -1,16 +1,10 @@
 import React from 'react';
 import { makeStyles } from '@material-ui/core/styles';
-import { Button, IconButton, Typography } from '@material-ui/core';
-import TextField from '@material-ui/core/TextField';
-import Dialog from '@material-ui/core/Dialog';
-import DialogActions from '@material-ui/core/DialogActions';
-import DialogContent from '@material-ui/core/DialogContent';
-import DialogTitle from '@material-ui/core/DialogTitle';
+import {
+    Dialog, DialogActions, DialogContent, DialogTitle, Typography, Button, IconButton, Card, TextField,
+    Select, MenuItem, InputLabel
+} from '@material-ui/core';
 import Alert from '@material-ui/lab/Alert';
-import InputLabel from '@material-ui/core/InputLabel';
-import Select from '@material-ui/core/Select';
-import MenuItem from '@material-ui/core/MenuItem';
-import Card from '@material-ui/core/Card';
 import EditIcon from '@material-ui/icons/Edit';
 
 import { channels } from '../../../shared/constants';
@@ -62,7 +56,7 @@ export default function EditSubject({ selected, subjectsUpdated, subCode, year, 
     const [subLabHrs, setSubLabHrs] = React.useState(0);
     const [subEvalHrs, setSubEvalHrs] = React.useState(0);
 
-    const [subjectEditSuccess, setSubjectEditSuccess] = React.useState({ type: 'info', msg: 'Enter Subejct Info.' });
+    const [subjectEditSuccess, setSubjectEditSuccess] = React.useState({ type: 'info', msg: 'Enter Subject Info.' });
 
     const handleClickOpen = () => {
         setOpen(true);
@@ -70,6 +64,7 @@ export default function EditSubject({ selected, subjectsUpdated, subCode, year, 
 
     const handleClose = () => {
         setOpen(false);
+        setSubjectEditSuccess({ type: 'info', msg: 'Enter Subject Info.' });
     };
 
     const handleEditSubject = async () => {
@@ -97,7 +92,7 @@ export default function EditSubject({ selected, subjectsUpdated, subCode, year, 
                 ipcRenderer.removeAllListeners(channels.EDIT_SUBJECT);
                 const { success } = arg;
                 if (success) {
-                    setSubjectEditSuccess({ type: 'success', msg: 'Subject editted.' });
+                    setSubjectEditSuccess({ type: 'success', msg: 'Subject edited.' });
                     setSubjectCode('');
                     setSubYear('');
                     setSubSem('');

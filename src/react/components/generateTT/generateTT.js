@@ -1,14 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { makeStyles } from '@material-ui/core/styles';
 import { Button, IconButton,MenuItem } from '@material-ui/core';
-import RefreshIcon from '@material-ui/icons/Refresh';
 import Paper from '@material-ui/core/Paper';
 import Tabs from '@material-ui/core/Tabs';
 import Tab from '@material-ui/core/Tab';
-import InputLabel from '@material-ui/core/InputLabel';
-import FormHelperText from '@material-ui/core/FormHelperText';
-import FormControl from '@material-ui/core/FormControl';
-import Select from '@material-ui/core/Select';
 import TextField from '@material-ui/core/TextField';
 import Autocomplete from '@material-ui/lab/Autocomplete';
 import Typography from '@material-ui/core/Typography';
@@ -16,11 +11,8 @@ import Accordion from '@material-ui/core/Accordion';
 import AccordionSummary from '@material-ui/core/AccordionSummary';
 import AccordionDetails from '@material-ui/core/AccordionDetails';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
-import { DataGrid } from '@material-ui/data-grid';
 import Table from './Table';
-import Pagination from './Pagination';
-import DeleteSchedule from './DeleteSchedule';
-import EditSchedule from './EditSchedule';
+
 
 import { channels } from '../../../shared/constants';
 
@@ -58,8 +50,8 @@ const WorkingHours = () => {
     const [loading, setLoading] = useState(false);
     const [currentPage, setCurrentPage] = useState(1);
     const [schedulesPerPage] = useState(3);
-    const [selected, setSelected] = useState('');
-    const [editable, setEditable] = useState('');
+    const [consecutives, setConsecutives] = useState('');
+    const [preferences, setPreferences] = useState([]);
     const [buildings, setBuildings] = useState([]);
     const [sessions, setSessions] = useState([]);
     const [locations, setLocations] = useState([]);
@@ -104,7 +96,6 @@ const WorkingHours = () => {
 
         });
 
-
     }
     const fetchLocations = async () => {
 
@@ -130,6 +121,18 @@ const WorkingHours = () => {
         });
 
     }
+    const fetchPreference= async () => {
+
+        await ipcRenderer.send(channels.LOAD_PREFERENCE_FOR_TT);
+
+        ipcRenderer.on(channels.LOAD_PREFERENCE_FOR_TT, (event, arg) => {
+            ipcRenderer.removeAllListeners(channels.LOAD_PREFERENCE_FOR_TT);
+            const rs = arg;
+            setPreferences(rs);
+
+        });
+
+    }
     const fetchSchedule = async () => {
 
         await ipcRenderer.send(channels.LOAD_SCHEDULE);
@@ -138,7 +141,6 @@ const WorkingHours = () => {
             ipcRenderer.removeAllListeners(channels.LOAD_SCHEDULE);
             const rs = arg;
             setSchedule(rs);
-            // console.log(schedule);
         });
         setLoading(true);
     }
@@ -163,6 +165,17 @@ const WorkingHours = () => {
             setSessions(rs);
         });
     }
+    const fetchConsecutives = async () => {
+
+        await ipcRenderer.send(channels.LOAD_COSECUTIVES_FOR_TT);
+
+        ipcRenderer.on(channels.LOAD_COSECUTIVES_FOR_TT, (event, arg) => {
+            ipcRenderer.removeAllListeners(channels.LOAD_COSECUTIVES_FOR_TT);
+            const rs = arg;
+            setConsecutives(rs);
+           // setSessions(rs);
+        });
+    }
     // useeffect => runs when mounted and also when content gets updated
     useEffect(() => {
 
@@ -172,6 +185,8 @@ const WorkingHours = () => {
         fetchStudents();
         fetchSessions();
         fetchSchedule();
+        fetchPreference();
+        fetchConsecutives();
 
     }, []);
 
@@ -194,6 +209,8 @@ const WorkingHours = () => {
                         schedule={schedule}
                         type={tabVal}
                         students={students}
+                        preferences={preferences}
+                        consecutives={consecutives}
                     // handleRadioChange={handleRadioChange}
                         ref={childRef}
                     /> : <h1> Loading </h1>
@@ -235,7 +252,7 @@ const WorkingHours = () => {
                 <Button variant="contained" color="primary" style={{ marginLeft: '17%' }} onClick={()=>childRef.current.heading(groupId)}>
                     View
                 </Button>
-                <Button variant="contained" color="primary" >
+                <Button variant="contained" color="primary" onClick={() => window.print()} >
                     Print
                 </Button>
             </div>
@@ -250,6 +267,9 @@ const WorkingHours = () => {
                         sessions={sessions}
                         schedule={schedule}
                         type={tabVal}
+                        students={students}
+                        preferences={preferences}
+                        consecutives={consecutives}
                        
                     // handleRadioChange={handleRadioChange}
                      ref={childRef}
@@ -274,7 +294,7 @@ const WorkingHours = () => {
                 <Button variant="contained" color="primary" onClick="viewTable" style={{ marginLeft: '62%' }} onClick={()=>childRef.current.heading(lecturer)} >
                     View
                 </Button>
-                <Button variant="contained" color="primary" >
+                <Button variant="contained" color="primary" onClick={() => window.print()} >
                     Print
                 </Button>
             </div>
@@ -288,6 +308,9 @@ const WorkingHours = () => {
                         sessions={sessions}
                         schedule={schedule}
                         type={tabVal}
+                        students={students}
+                        preferences={preferences}
+                        consecutives={consecutives}
                        
                     // handleRadioChange={handleRadioChange}
                      ref={childRef}
@@ -318,10 +341,10 @@ const WorkingHours = () => {
                     style={{ width: '20%', margin: 5 }}
                     renderInput={(params) => <TextField  {...params} label="Room" variant="outlined" />}
                 />
-                <Button variant="contained" color="primary" style={{ marginLeft: '40%' }} onClick={()=>childRef.current.heading(room)} >
+                <Button variant="contained" color="primary" style={{ marginLeft: '40%' }} onClick={()=>childRef.current.heading(room.rID)} >
                     View
                 </Button>
-                <Button variant="contained" color="primary"  >
+                <Button variant="contained" color="primary" onClick={() => window.print()} >
                     Print
                 </Button>
             </div>
@@ -360,10 +383,7 @@ const WorkingHours = () => {
             
 
             <div className={classes.pagination}>
-                <Pagination
-                    schedulesPerPage={schedulesPerPage}
-                    paginate={paginate}
-                />
+              
             </div>
 
             <Greeting isLoggedIn={tabVal} />
@@ -377,8 +397,7 @@ const WorkingHours = () => {
                 </AccordionSummary>
                 <AccordionDetails>
                     <Typography>
-                        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse malesuada lacus ex,
-                        sit amet blandit leo lobortis eget.
+                        No Conflicts
           </Typography>
                 </AccordionDetails>
             </Accordion>

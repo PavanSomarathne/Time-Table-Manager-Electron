@@ -1,17 +1,10 @@
 import React from 'react';
 import { makeStyles } from '@material-ui/core/styles';
-import { Button, IconButton, Typography } from '@material-ui/core';
-import TextField from '@material-ui/core/TextField';
-import Dialog from '@material-ui/core/Dialog';
-import DialogActions from '@material-ui/core/DialogActions';
-import DialogContent from '@material-ui/core/DialogContent';
-import DialogContentText from '@material-ui/core/DialogContentText';
-import DialogTitle from '@material-ui/core/DialogTitle';
+import {
+    Button, IconButton, Typography, TextField, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, InputLabel, Select,
+    MenuItem, Card
+} from '@material-ui/core';
 import Alert from '@material-ui/lab/Alert';
-import InputLabel from '@material-ui/core/InputLabel';
-import Select from '@material-ui/core/Select';
-import MenuItem from '@material-ui/core/MenuItem';
-import Card from '@material-ui/core/Card';
 import AddIcon from '@material-ui/icons/Add';
 
 import { channels } from '../../../shared/constants';
@@ -22,7 +15,7 @@ const useStyles = makeStyles((theme) => ({
         display: 'flex',
         flexDirection: 'row',
         alignItems: 'flex-start',
-        justifyContent: 'space-between',
+        justifyContent: 'center',
         margin: theme.spacing(1),
     },
     sides: {
@@ -34,15 +27,6 @@ const useStyles = makeStyles((theme) => ({
         paddingTop: theme.spacing(1),
         paddingBottom: theme.spacing(1),
         minWidth: 200,
-    },
-    myRowInputs: {
-        display: 'flex',
-        flexDirection: 'row',
-        alignItems: 'center',
-        paddingRight: theme.spacing(1),
-    },
-    myRowInput: {
-        width: 100
     },
     myAlert: {
         paddingTop: theme.spacing(1),
@@ -67,8 +51,10 @@ export default function AddLocation({ locationsUpdated, buildings, fetchBuilding
 
     const handleClose = () => {
         setOpen(false);
-        setBuildingAddSuccess({ type: 'info', msg: 'Enter Building ID' });
-        setRoomAddSuccess({ type: 'info', msg: 'Enter Room Info.' });
+        setTimeout(function () {
+            setBuildingAddSuccess({ type: 'info', msg: 'Enter Building ID' });
+            setRoomAddSuccess({ type: 'info', msg: 'Enter Room Info.' });
+        }, 1000)
     };
 
     const handleAddBuilding = async () => {
@@ -129,7 +115,7 @@ export default function AddLocation({ locationsUpdated, buildings, fetchBuilding
             >
                 <AddIcon />
             </IconButton>
-            <Dialog open={open} onClose={handleClose} aria-labelledby="form-dialog-title">
+            <Dialog fullScreen open={open} onClose={handleClose} aria-labelledby="form-dialog-title">
                 <DialogTitle id="form-dialog-title">Add Location</DialogTitle>
                 <DialogContent className={classes.row}>
                     <Card className={classes.sides} variant="outlined">
@@ -164,7 +150,7 @@ export default function AddLocation({ locationsUpdated, buildings, fetchBuilding
                             Add Room
                         </DialogContentText>
 
-                        <div className={classes.myRowInput}>
+                        <div>
                             <TextField
                                 margin="dense"
                                 id="roomID"
@@ -172,10 +158,11 @@ export default function AddLocation({ locationsUpdated, buildings, fetchBuilding
                                 type="text"
                                 value={newRoomID}
                                 onChange={(e) => setNewRoomID(e.target.value)}
+                                fullWidth
                             />
                         </div>
-                        <div className={classes.myRowInput}>
-                            <InputLabel id="roomType-simple-select-label" className={classes.myRowInput}>
+                        <div>
+                            <InputLabel id="roomType-simple-select-label">
                                 <Typography variant="caption" component="h6">
                                     Room Type
                                     </Typography>
@@ -184,8 +171,8 @@ export default function AddLocation({ locationsUpdated, buildings, fetchBuilding
                                 labelId="roomType-simple-select-label"
                                 id="roomType-simple-select"
                                 value={roomType}
-                                className={classes.myRowInput}
                                 onChange={(e) => setRoomType(e.target.value)}
+                                fullWidth
                             >
                                 <MenuItem value='Lecture Hall'>Lecture Hall</MenuItem>
                                 <MenuItem value='Laboratory'>Laboratory</MenuItem>
@@ -204,6 +191,7 @@ export default function AddLocation({ locationsUpdated, buildings, fetchBuilding
                                 className={classes.myInput}
                                 value={buildingID}
                                 onChange={(e) => setBuildingID(e.target.value)}
+                                fullWidth
                             >
                                 {buildings.map(b => (
                                     <MenuItem key={b.id} value={b.bID}>{b.bID}</MenuItem>

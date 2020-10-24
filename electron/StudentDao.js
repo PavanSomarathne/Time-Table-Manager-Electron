@@ -22,7 +22,16 @@ const StudentDao = {
     loadStudents: (callback) => {
         Student.find().lean().then(rs => callback(rs))
     },
-    
+    // SEARCH STUDENTS
+    searchStudents: (keyword, callback) => {
+        Student.find({ $text: { $search: keyword } })
+            .then(rs => {
+                if (rs)
+                    callback(rs)
+                else
+                    callback([])
+            })
+    },
 
     // DELETE Student
     deleteStudent: (id, callback) => {
@@ -62,7 +71,7 @@ const StudentDao = {
     },
     // LOAD SUB GROUP ID
     loadSubGroupId: (callback) => {
-        GroupId.find().lean().then(rs => callback(rs))
+        SubGroupId.find().lean().then(rs => callback(rs))
     },
 
     // FIND GROUP ID
@@ -75,6 +84,57 @@ const StudentDao = {
     findSubGroupId: (sgid, callback) => {
         SubGroupId.find({ subGroupId: sgid }).lean()
             .then(rs => callback(rs))
+    },
+
+    // EDIT GROUP ID ON UNAVAILABILITY
+    editGroupIdOnUnavailability: (load, callback) => {
+        const { id, unavailableHours } = load
+        GroupId.findOneAndUpdate({ groupId: id }, {
+            $set: {
+                unavailableHours: unavailableHours
+            }
+        }, { useFindAndModify: false })
+            .then(() => {
+                callback({ success: true })
+            }).catch(err => {
+                console.error(err);
+                callback({ success: false })
+            })
+    },
+
+    // EDIT SUB GROUP ID ON UNAVAILABILITY
+    editSubGroupIdOnUnavailability: (load, callback) => {
+        const { id, unavailableHours } = load
+        SubGroupId.findOneAndUpdate({ subGroupId: id }, {
+            $set: {
+                unavailableHours: unavailableHours
+            }
+        }, { useFindAndModify: false })
+            .then(() => {
+                callback({ success: true })
+            }).catch(err => {
+                console.error(err);
+                callback({ success: false })
+            })
+    },
+
+    // EDIT STUDENT
+    editStudent: (yearNo, semNo, programmeName, groupId, subGroupId, id, callback) => {
+        Student.findOneAndUpdate({ _id: id }, {
+            $set: {
+                year: yearNo,
+                sem: semNo,
+                programme: programmeName,
+                group: groupId,
+                subGroup: subGroupId
+            }
+        }, { useFindAndModify: false })
+            .then(() => {
+                callback({ success: true })
+            }).catch(err => {
+                console.error(err);
+                callback({ success: false })
+            })
     },
 }
 

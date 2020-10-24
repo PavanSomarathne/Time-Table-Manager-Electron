@@ -58,8 +58,13 @@ const NullError=forwardRef(({ scheduleUpdated },ref)=> {
  
 
     useImperativeHandle(ref, () => ({
-     handleClickOpen(){
+     handleClickOpen(val){
         setOpen(true);
+        if(val==0){
+            setError({ type: 'warning', msg: 'Please Select the item correctly!' });
+        }else if(val==1){
+            setError({ type: 'warning', msg: 'No sessions for the selected category!' });
+        }
         }
     }));
     const handleClose = () => {
@@ -69,7 +74,7 @@ const NullError=forwardRef(({ scheduleUpdated },ref)=> {
 
     return (
 
-        <div>
+       
             <Dialog open={open} onClose={handleClose} aria-labelledby="form-dialog-title">
                 <div className={classes.row}>
                     <div className={classes.sides} >
@@ -89,7 +94,7 @@ const NullError=forwardRef(({ scheduleUpdated },ref)=> {
                     </Button>
                 </DialogActions>
             </Dialog>
-        </div >
+       
     );
 })
 

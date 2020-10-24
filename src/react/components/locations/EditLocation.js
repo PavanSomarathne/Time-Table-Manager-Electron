@@ -1,17 +1,10 @@
 import React from 'react';
 import { makeStyles } from '@material-ui/core/styles';
-import { Button, IconButton, Typography } from '@material-ui/core';
-import TextField from '@material-ui/core/TextField';
-import Dialog from '@material-ui/core/Dialog';
-import DialogActions from '@material-ui/core/DialogActions';
-import DialogContent from '@material-ui/core/DialogContent';
-import DialogContentText from '@material-ui/core/DialogContentText';
-import DialogTitle from '@material-ui/core/DialogTitle';
+import {
+    Button, IconButton, Typography, TextField, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, InputLabel, Select,
+    MenuItem, Card
+} from '@material-ui/core';
 import Alert from '@material-ui/lab/Alert';
-import InputLabel from '@material-ui/core/InputLabel';
-import Select from '@material-ui/core/Select';
-import MenuItem from '@material-ui/core/MenuItem';
-import Card from '@material-ui/core/Card';
 import EditIcon from '@material-ui/icons/Edit';
 
 import { channels } from '../../../shared/constants';
@@ -22,7 +15,7 @@ const useStyles = makeStyles((theme) => ({
         display: 'flex',
         flexDirection: 'row',
         alignItems: 'flex-start',
-        justifyContent: 'space-between',
+        justifyContent: 'center',
         margin: theme.spacing(1),
     },
     sides: {
@@ -41,16 +34,13 @@ const useStyles = makeStyles((theme) => ({
         alignItems: 'center',
         paddingRight: theme.spacing(1),
     },
-    myRowInput: {
-        width: 100
-    },
     myAlert: {
         paddingTop: theme.spacing(1),
         paddingBottom: theme.spacing(1),
     }
 }))
 
-export default function EditLocation({ buildings, selected, locationsUpdated, rid, type, bid, cap, lid }) {
+export default function EditLocation({ buildings, selected, setSelected, locationsUpdated, rid, type, bid, cap, lid }) {
     const classes = useStyles();
     const [open, setOpen] = React.useState(false);
     const [newRoomID, setNewRoomID] = React.useState('');
@@ -65,7 +55,10 @@ export default function EditLocation({ buildings, selected, locationsUpdated, ri
 
     const handleClose = () => {
         setOpen(false);
-        setRoomEditSuccess({ type: 'info', msg: 'Enter Room Info.' });
+        setTimeout(function () {
+            setRoomEditSuccess({ type: 'info', msg: 'Enter Room Info.' });
+            setSelected('');
+        }, 1000)
     };
 
     const handleEditRoom = async () => {
@@ -108,7 +101,7 @@ export default function EditLocation({ buildings, selected, locationsUpdated, ri
             >
                 <EditIcon />
             </IconButton>
-            <Dialog open={open} onClose={handleClose} aria-labelledby="form-dialog-title">
+            <Dialog fullScreen open={open} onClose={handleClose} aria-labelledby="form-dialog-title">
                 <DialogTitle id="form-dialog-title">Edit Location</DialogTitle>
                 <DialogContent className={classes.row}>
                     <Card className={classes.sides} variant="outlined">
@@ -124,6 +117,7 @@ export default function EditLocation({ buildings, selected, locationsUpdated, ri
                                 type="text"
                                 value={newRoomID}
                                 onChange={(e) => setNewRoomID(e.target.value)}
+                                fullWidth
                             />
                             <Typography variant="caption" component="h3">{rid}</Typography>
                         </div>
@@ -139,6 +133,7 @@ export default function EditLocation({ buildings, selected, locationsUpdated, ri
                                 value={roomType}
                                 className={classes.myRowInput}
                                 onChange={(e) => setRoomType(e.target.value)}
+                                fullWidth
                             >
                                 <MenuItem value='Lecture Hall'>Lecture Hall</MenuItem>
                                 <MenuItem value='Laboratory'>Laboratory</MenuItem>
@@ -158,6 +153,7 @@ export default function EditLocation({ buildings, selected, locationsUpdated, ri
                                 className={classes.myInput}
                                 value={buildingID}
                                 onChange={(e) => setBuildingID(e.target.value)}
+                                fullWidth
                             >
                                 {buildings.map(b => (
                                     <MenuItem key={b.id} value={b.bID}>{b.bID}</MenuItem>

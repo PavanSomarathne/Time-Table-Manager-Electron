@@ -4,6 +4,7 @@ const Schema = mongoose.Schema
 const LecturerSchema = new Schema({
     eId: {
         type: String,
+        unique: true,
         required: true
     },
     name: {
@@ -34,8 +35,9 @@ const LecturerSchema = new Schema({
         type: String,
         required: true
     },
-    unavailableTime:{
-        type: String
+    unavailableTime: {
+        type: Object,
+        default: null
     },
     dateCreated: {
         type: Date,

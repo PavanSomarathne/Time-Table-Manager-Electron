@@ -25,7 +25,7 @@ const ScheduleDao = {
     },
     // SEARCH SCHEDULES
     searchSchedules: (keyword, callback) => {
-        Schedule.find(1)
+        Schedule.find({ $text: { $search: keyword } })
             .then(rs => {
                 if (rs)
                     callback(rs)

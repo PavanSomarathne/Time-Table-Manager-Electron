@@ -1,9 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { makeStyles } from '@material-ui/core/styles';
-import { Button, IconButton } from '@material-ui/core';
+import { IconButton, TextField } from '@material-ui/core';
 import RefreshIcon from '@material-ui/icons/Refresh';
-import TextField from '@material-ui/core/TextField';
-import Typography from '@material-ui/core/Typography';
+import Skeleton from '@material-ui/lab/Skeleton';
 
 import Table from './Table';
 import Pagination from './Pagination';
@@ -11,6 +10,7 @@ import AdvancedSearch from './AdvancedSearch';
 import AddLocation from './AddLocation';
 import DeleteLocation from './DeleteLocation';
 import EditLocation from './EditLocation';
+import Preferences from './Preferences';
 
 import { channels } from '../../../shared/constants';
 const { ipcRenderer } = window.require('electron');
@@ -24,13 +24,18 @@ const useStyles = makeStyles((theme) => ({
         margin: theme.spacing(1),
     },
     table: {
-        marginTop: theme.spacing(2),
+        marginTop: theme.spacing(3),
         minWidth: 650,
     },
     pref: {
         marginTop: theme.spacing(1),
         marginBottom: theme.spacing(1),
         width: 200,
+    },
+    pagination: {
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'flex-end',
     }
 }))
 
@@ -40,14 +45,20 @@ const createData = (rID, rType, bID, capacity, id) => {
 
 const Locations = () => {
     const classes = useStyles();
-    const [locations, setLocations] = useState([]);
-    const [buildings, setBuildings] = useState([]);
+    const [locations, setLocations] = React.useState([]);
+    const [buildings, setBuildings] = React.useState([]);
+    const [tags, setTags] = React.useState([]);
+    const [subjects, setSubjects] = React.useState([]);
+    const [lecturers, setLecturers] = React.useState([]);
+    const [groupIDs, setGroupIDs] = React.useState([]);
+    const [subGroupIDs, setSubGroupIDs] = React.useState([]);
+    const [sessions, setSessions] = React.useState([]);
 
-    const [loading, setLoading] = useState(false);
-    const [currentPage, setCurrentPage] = useState(1);
-    const [locationsPerPage] = useState(3);
-    const [selected, setSelected] = useState('');
-    const [editable, setEditable] = useState('');
+    const [loading, setLoading] = React.useState(true);
+    const [currentPage, setCurrentPage] = React.useState(1);
+    const [locationsPerPage] = React.useState(5);
+    const [selected, setSelected] = React.useState('');
+    const [editable, setEditable] = React.useState('');
 
     // get current locations
     const indexOfLastLocation = currentPage * locationsPerPage;
@@ -82,10 +93,76 @@ const Locations = () => {
         });
     }
 
+    const fetchTags = async () => {
+        ipcRenderer.send(channels.LOAD_TAGS);
+
+        ipcRenderer.on(channels.LOAD_TAGS, (event, arg) => {
+            ipcRenderer.removeAllListeners(channels.LOAD_TAGS);
+            const ts = arg;
+            setTags(ts);
+        });
+    }
+
+    const fetchSubjects = async () => {
+        ipcRenderer.send(channels.LOAD_SUBJECTS);
+
+        ipcRenderer.on(channels.LOAD_SUBJECTS, (event, arg) => {
+            ipcRenderer.removeAllListeners(channels.LOAD_SUBJECTS);
+            const ss = arg;
+            setSubjects(ss);
+        });
+    }
+
+    const fetchLecturers = async () => {
+        ipcRenderer.send(channels.LOAD_LECTURERS);
+
+        ipcRenderer.on(channels.LOAD_LECTURERS, (event, arg) => {
+            ipcRenderer.removeAllListeners(channels.LOAD_LECTURERS);
+            const ls = arg;
+            setLecturers(ls);
+        });
+    }
+
+    const fetchGroupIDs = async () => {
+        ipcRenderer.send(channels.LOAD_GROUPID);
+
+        ipcRenderer.on(channels.LOAD_GROUPID, (event, arg) => {
+            ipcRenderer.removeAllListeners(channels.LOAD_GROUPID);
+            const gids = arg;
+            setGroupIDs(gids);
+        });
+    }
+
+    const fetchSubGroupIDs = async () => {
+        ipcRenderer.send(channels.LOAD_SUBGROUPID);
+
+        ipcRenderer.on(channels.LOAD_SUBGROUPID, (event, arg) => {
+            ipcRenderer.removeAllListeners(channels.LOAD_SUBGROUPID);
+            const sgids = arg;
+            setSubGroupIDs(sgids);
+        });
+    }
+
+    const fetchSessions = async () => {
+        ipcRenderer.send(channels.LOAD_SESSIONS);
+
+        ipcRenderer.on(channels.LOAD_SESSIONS, (event, arg) => {
+            ipcRenderer.removeAllListeners(channels.LOAD_SESSIONS);
+            const sess = arg;
+            setSessions(sess);
+        });
+    }
+
     // useeffect => runs when mounted and also when content gets updated
-    useEffect(() => {
-        fetchLocations();
+    React.useEffect(() => {
         fetchBuildings();
+        fetchLocations();
+        fetchTags();
+        fetchSubjects();
+        fetchLecturers();
+        fetchGroupIDs();
+        fetchSubGroupIDs();
+        fetchSessions();
     }, []);
 
     // refresh table
@@ -99,7 +176,6 @@ const Locations = () => {
         let tLocations = locations;
         const edit = tLocations.filter(l => (l.id === value))[0];
         setEditable(edit);
-        console.log(edit)
     }
 
     // prompted building for advanced search
@@ -162,59 +238,38 @@ const Locations = () => {
                 </form>
             </div>
 
-            <div className={classes.row}>
-                <Table
-                    locations={currentLocations}
-                    loading={loading}
-                    handleRadioChange={handleRadioChange}
-                />
-            </div>
+            {!loading ? (
+                <>
+                    <div className={classes.row}>
+                        <Table
+                            locations={currentLocations}
+                            loading={loading}
+                            handleRadioChange={handleRadioChange}
+                        />
+                    </div>
 
-            <div className={classes.pagination}>
-                <Pagination
-                    locationsPerPage={locationsPerPage}
-                    totalLocations={locations.length}
-                    paginate={paginate}
-                />
-            </div>
-
-            <div className={classes.row}>
-                <Button
-                    variant="contained"
-                    size="small"
-                    color="primary"
-                    className={classes.pref}
-                >
-                    <Typography variant="caption" component="h3">
-                        Lecturer Preferences
-                </Typography>
-                </Button>
-                <Button
-                    variant="contained"
-                    size="small"
-                    color="primary"
-                    className={classes.pref}
-                >
-                    <Typography variant="caption" component="h3">
-                        Group Preferences
-                </Typography>
-                </Button>
-                <Button
-                    variant="contained"
-                    size="small"
-                    color="primary"
-                    className={classes.pref}
-                >
-                    <Typography variant="caption" component="h3">
-                        Session Preferences
-                </Typography>
-                </Button>
-            </div>
+                    <div className={classes.pagination}>
+                        <Pagination
+                            locationsPerPage={locationsPerPage}
+                            totalLocations={locations.length}
+                            paginate={paginate}
+                        />
+                    </div>
+                </>
+            ) : (
+                    <>
+                        <div className={classes.row}>
+                            <Skeleton variant="rect" width={650} height={450} />
+                            <Skeleton width={200} />
+                        </div>
+                    </>
+                )}
 
             <div className={classes.row}>
                 <EditLocation
                     buildings={buildings}
                     selected={selected}
+                    setSelected={setSelected}
                     locationsUpdated={locationsUpdated}
                     rid={editable.rID}
                     type={editable.rType}
@@ -230,6 +285,15 @@ const Locations = () => {
                     locationsUpdated={locationsUpdated}
                     buildings={buildings}
                     fetchBuildings={fetchBuildings}
+                />
+                <Preferences
+                    locations={locations}
+                    tags={tags}
+                    subjects={subjects}
+                    lecturers={lecturers}
+                    groupIDs={groupIDs}
+                    subGroupIDs={subGroupIDs}
+                    sessions={sessions}
                 />
             </div>
         </div>

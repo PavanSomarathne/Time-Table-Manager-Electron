@@ -1,6 +1,8 @@
 module.exports = {
     channels: {
         APP_INFO: 'app_info',
+        // sndp's
+        // locations
         LOAD_BUILDINGS: 'load_buildings',
         ADD_BUILDING: 'add_building',
         ADD_ROOM: 'add_room',
@@ -8,20 +10,13 @@ module.exports = {
         SEARCH_ROOMS: 'search_rooms',
         DELETE_ROOM: 'delete_room',
         EDIT_ROOM: 'edit_room',
-        LOAD_SUBJECTS: 'load_subjects',
-        EDIT_SUBJECT: 'edit_subject',
-        DELETE_SUBJECT: 'delete_subject',
-        ADD_SUBJECT: 'add_subject',
-		
-		//supuni's
-        ADD_SCHEDULE: 'add_schedule',
-        EDIT_SCHEDULE: 'edit_schedule',
-        DELETE_SCHEDULE: 'delete_schedule',
-        LOAD_SCHEDULE: 'load_schedule',
-        SEARCH_SCHEDULE: 'search_schedule',
-        LOAD_STUDENTS_FOR_TT: 'load_students_for_tt',
+        // preferences
+        ADD_PREFERENCE: 'add_preference',
+        LOAD_PREFERENCES: 'load_preferences',
+        FIND_PREFERENCE: 'find_preference',
+        EDIT_PREFERENCE: 'edit_preference',
 
-        //lecturers and sessions
+        // lakimina's
         LOAD_SUBJECTS: 'load_subjects',
         EDIT_SUBJECT: 'edit_subject',
         DELETE_SUBJECT: 'delete_subject',
@@ -32,34 +27,54 @@ module.exports = {
         SEARCH_LECTURERS: 'search lecturers',
         DELETE_LECTURERS: 'delete lecturers',
         EDIT_LECTURERS: 'edit lecturers',
+        EDIT_LECTURER: 'edit_lecturer',
+        // sessions
         ADD_SESSION: 'add_session',
         LOAD_SESSIONS: 'load_sessions',
         SEARCH_SESSIONS: 'search_sessions',
         DELETE_SESSION: 'delete_session',
-        LOAD_TAGS: 'load_tags',
+        EDIT_SESSION: 'edit_session',
 
-         // nimaya's
-         ADD_YEARSEM: 'add_yearsem',
-         LOAD_YEARSEMS: 'load_yearsem',
-         ADD_PROGRAMME: 'add_programme',
-         LOAD_PROGRAMMES: 'load_programmes',
-         ADD_GROUP: 'add_group',
-         LOAD_GROUPS: 'load_groups',
-         ADD_STUDENT: 'add_student',
-         
-         SEARCH_STUDENTS: 'search_students',
-         ADD_TAG: 'add_tag',
-         LOAD_TAGS: 'load_tags',
-         SEARCH_TAGS: 'search_tags',
-         EDIT_TAG: 'load_tags',
-         DELETE_TAG: 'search_tags',
-         EDIT_STUDENT: 'load_tags',
-         DELETE_STUDENT: 'search_tags',
-         ADD_GROUPID: 'add_groupid',
-         LOAD_GROUPID: 'load_groupid',
-         ADD_SUBGROUPID: 'add_subgroupid',
-         LOAD_SUBGROUPID: 'load_subgroupid',
-         FIND_GROUPID: 'find_groupid',
-         FIND_SUBGROUPID: 'find_subgroupid',
+        // supuni's
+        ADD_SCHEDULE: 'add_schedule',
+        EDIT_SCHEDULE: 'edit_schedule',
+        DELETE_SCHEDULE: 'delete_schedule',
+        LOAD_SCHEDULE: 'load_schedule',
+        SEARCH_SCHEDULE: 'search_schedule',
+        LOAD_STUDENTS_FOR_TT: 'load_students_for_tt',
+        LOAD_PREFERENCE_FOR_TT:'load_preference_for_tt',
+        LOAD_COSECUTIVES_FOR_TT:'load_consecutives_for_tt',
+
+        // nimaya's
+        // students
+        ADD_YEARSEM: 'add_yearsem',
+        LOAD_YEARSEMS: 'load_yearsem',
+        ADD_PROGRAMME: 'add_programme',
+        LOAD_PROGRAMMES: 'load_programmes',
+        ADD_STUDENT: 'add_student',
+        LOAD_STUDENTS: 'load_students',
+        SEARCH_STUDENTS: 'search_students',
+        EDIT_STUDENT: 'load_tags',
+        DELETE_STUDENT: 'search_tags',
+        EDIT_GROUPID: 'edit_groupid',
+        EDIT_SUBGROUPID: 'edit_subgroupid',
+        // tags
+        ADD_TAG: 'add_tag',
+        LOAD_TAGS: 'load_tags',
+        SEARCH_TAGS: 'search_tags',
+        EDIT_TAG: 'load_tags',
+        DELETE_TAG: 'search_tags',
+        // groups
+        ADD_GROUPID: 'add_groupid',
+        ADD_GROUP: 'add_group',
+        LOAD_GROUPS: 'load_groups',
+        LOAD_GROUPID: 'load_groupid',
+        ADD_SUBGROUPID: 'add_subgroupid',
+        LOAD_SUBGROUPID: 'load_subgroupid',
+        FIND_GROUPID: 'find_groupid',
+        FIND_SUBGROUPID: 'find_subgroupid',
+        // consecutive sessions
+        ADD_CONSECUTIVE: 'add_consecutive',
+        LOAD_CONSECUTIVE: 'load_consecutive',
     },
 };

@@ -1,6 +1,5 @@
 import React,{ forwardRef, useEffect,useImperativeHandle,useRef  } from 'react';
 import { makeStyles } from '@material-ui/core/styles';
-import { DataGrid } from '@material-ui/data-grid';
 import Table from '@material-ui/core/Table';
 import TableBody from '@material-ui/core/TableBody';
 import TableCell from '@material-ui/core/TableCell';
@@ -8,8 +7,6 @@ import TableContainer from '@material-ui/core/TableContainer';
 import TableHead from '@material-ui/core/TableHead';
 import TableRow from '@material-ui/core/TableRow';
 import Paper from '@material-ui/core/Paper';
-import Radio from '@material-ui/core/Radio';
-import Typography from '@material-ui/core/Typography';
 import NullError from './NullError';
 
 const useStyles = makeStyles((theme) => ({
@@ -25,10 +22,8 @@ const useStyles = makeStyles((theme) => ({
     },
 }))
 const arr1 = [ "Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun" ];
-const TimeTable =forwardRef(({ schedule,sessions,type,students },ref) => {
+const TimeTable =forwardRef(({ schedule,sessions,type,students,preferences,consecutives },ref) => {
     const classes = useStyles();
-    const [selectedValue, setSelectedValue] = React.useState('');
-    const [workingDays, setWorkingDays] = React.useState([]);
     const [columns, setColumns] = React.useState([]);
     const [time, setTime] = React.useState([]);
     const [rows, setRows] = React.useState([]);
@@ -43,10 +38,7 @@ const TimeTable =forwardRef(({ schedule,sessions,type,students },ref) => {
       
     
     useEffect(() => {
-    // if(schedule.count()>0){
-      //heading();
-    // }
-      
+  
   }, []);
    
   const getHrs = (date) => {
@@ -79,9 +71,9 @@ useImperativeHandle(ref, () => ({
    heading(searchVal){
 
     if (searchVal==null) {
-        childRef.current.handleClickOpen();
-    }else{
-
+        childRef.current.handleClickOpen(0);
+    }
+    else{
     var workingDays = schedule[0].workingDays.split(',');
    
     while(columns.length > 0) {
@@ -122,14 +114,49 @@ useImperativeHandle(ref, () => ({
     }
    setMr(rows)
 
-  
-   // rows1.filter(n=>n.id===1).map(n=>{n.Thu='test'});
-    //setRows(rows1);
-
     var arr2d = [ ];
     var sessionCnt = 0;
     let sessionLen = sessions.length;
-    const sessionList=sessions;
+    
+    //Session list re arrange for the consecutive
+
+    //sessions1 copy
+    var sessions1=[];
+    sessions.forEach(element => {
+        sessions1.push(element);
+    });
+    var existingIndex1=0;
+    var existingIndex2=0;
+    if(consecutives.length>0){
+        consecutives.forEach(con => {
+            sessions1.forEach(session => {
+                if(con.sessions!=null&& con.sessions[0]== session.id ){
+                     existingIndex1= sessions1.indexOf(session);
+                     
+                }
+            });
+            sessions1.forEach(session => {
+                if(con.sessions!=null&& con.sessions[1]== session.id ){
+                     existingIndex2= sessions1.indexOf(session);
+                }
+            });
+            
+             //getting the next value after the first variable
+             if(existingIndex1+1!=existingIndex2){
+               
+                    var ses1=sessions1.splice(existingIndex1,1);
+                    var ses=sessions1.splice(existingIndex1-1,1);
+                    var ses2=sessions1.splice(existingIndex2,1);
+                    
+                    sessions1.splice(existingIndex1-1, 0, ses1[0]);
+                    sessions1.splice(existingIndex1, 0, ses2[0]);
+                    sessions1.splice(existingIndex2, 0, ses[0]);
+                 
+             }
+        });
+        
+    }
+    const sessionList=sessions1;
 
     //session copy
     var session_copy=[];
@@ -139,8 +166,8 @@ useImperativeHandle(ref, () => ({
 
     let val = 0;
     let value = 0;
-    let l=sessionLen *5;
-
+    let sessionPrintCounter=0;
+    //Initialize the 2d array
       for (let i = 0; i < schedule[0].dayCount; i++) {
           var newArr = [];
           for (let j = 0; j < noOfSlots; j++) {
@@ -148,21 +175,7 @@ useImperativeHandle(ref, () => ({
           }
           arr2d[i] = newArr;
       }
-
-        //   for (let i = 0; i < schedule[0].dayCount; i++)
-        //     {
-        //       var newArr=[];
-        //       for (let j = 0; j < noOfSlots; j++)
-        //       {
-        //         sessionCnt++;
-        //         consolsessionList[sessionCnt]); 
-
-        //       }
-        //      ;
-        //   }
-         // console.log(arr2d[0][0].length); 
-         // arr2d[0,0].push(sessions[0]);
-          //console.log(sessionList[2].Duration );       
+      
 
 
       do {
@@ -173,9 +186,40 @@ useImperativeHandle(ref, () => ({
                       {
                           let test = true;
                           while (test) {
+                            
                               arr2d[i][j].forEach(element => {
-                                  if (sessionCnt < sessionLen && element.groupIdSub == sessionList[sessionCnt].groupIdSub) {
-                                      j++;
+                                var group1="";
+                                students.forEach(ele => {
+                                    if(ele.groupIdLabel===element.groupIdSub){
+                                        group1=ele.groupIdLabel;
+                                    }else if(ele.subGroupIdLabel===element.groupIdSub){
+                                        group1=ele.groupIdLabel;
+                                    }
+                                    
+                                });
+                                var group2="";
+                                students.forEach(ele => {
+                                    if(ele.groupIdLabel===sessionList[sessionCnt].groupIdSub ){
+                                        group2=ele.groupIdLabel;
+                                    }else if(ele.subGroupIdLabel===sessionList[sessionCnt].groupIdSub ){
+                                        group2=ele.groupIdLabel;
+                                    }
+                                    
+                                })
+                                
+                                  if (sessionCnt < sessionLen && group1 === group2) {
+                                      
+                                      
+                                      if ((j+1) > noOfSlots) {
+                                        //date check for half sessions
+                                        if (i + 1 < schedule[0].dayCount) {
+                                            i++;
+                                        }
+                                        j = 0;
+                                    }
+                                    else {
+                                        j++;
+                                    }
                                   }
                                   else {
                                       test = false;
@@ -256,11 +300,11 @@ useImperativeHandle(ref, () => ({
                   }
               }
           }
-          l--;
+        
       } while (session_copy.length > 0);
-      let i = 0;
-   
-    console.log(arr2d);
+    
+  
+//Printing TT
     var showArr=[];
     for (var h = 0; h < noOfSlots; h++)
             {var showArrRow=[];
@@ -272,9 +316,6 @@ useImperativeHandle(ref, () => ({
                     }else{
                        if(arr2d[j-1][h]!=null){
                         arr2d[j-1][h].forEach(element => {
-                                
-                                
-
                                 if (type == 0 ) 
                                 {
                                     var group="";
@@ -284,37 +325,80 @@ useImperativeHandle(ref, () => ({
                                         }else if(ele.subGroupIdLabel===element.groupIdSub){
                                             group=ele.groupIdLabel;
                                         }
-                                        
                                     });
+
+                                    //printing lecturers
+                                    var lec="";
+                                    element.lecName.forEach(lect => {
+                                        lec=lec+","+lect 
+                                    });
+
                                     if(group == searchVal){
-                                        session = session + " " +element.subName+ "\n" +element.groupIdSub;
+                                        sessionPrintCounter++;
+                                        var isPrinted=true;
+                                    preferences.forEach(ele => {
+                                        if(ele.sessions.includes(element.id)){
+                                            isPrinted=false;
+                                            session = session + "\n " +element.subName+ "--\n"+lec+"\n" +element.groupIdSub+"\n"+element.tag+"\n" +ele.rID;
+                                        }
+                                    });
+                                    if(isPrinted){
+                                        session = session + "\n " +element.subName+ "--\n"+lec+"\n" +element.groupIdSub+"\n"+element.tag+"\n No room";
+                                    };
                                     }
                                     
-                                   // MainTitle.Content = "Group Id- "+searchVal;
                                 }
                                 else if (type == 1 && element.lecName.includes(searchVal) )
                                 {
-                                    session = session + " " +element.subName+ "\n" +element.groupIdSub;
-                                    //MainTitle.Content = "Mr/Mrs/Ms. " + searchVal;
+                                    sessionPrintCounter++;  
+                                    //printing lecturers
+                                    var lec="";
+                                    element.lecName.forEach(lect => {
+                                        lec=lec+","+lect 
+                                    });
+
+                                    var isPrinted=true;
+                                    preferences.forEach(ele => {
+                                        if(ele.sessions.includes(element.id)){
+                                            isPrinted=false;
+                                            session = session + "\n " +element.subName+ "--\n"+lec+"\n"  +element.groupIdSub+"\n"+element.tag+"\n"+ele.rID;
+                                        }
+                                    });
+                                    if(isPrinted){
+                                        session = session + "\n" +element.subName+ "--\n"+lec+"\n" +element.groupIdSub+"\n"+element.tag+"\n No room";
+                                    }
                                 }
-                                // else if (type == 2 && element.Room != null )
-                                // {
-                                //     if (item.Room.Rid == searchVal)
-                                //     {
-                                //         session = session + " " +element.subName+ "\n" +element.groupIdSub;
-                                //        // MainTitle.Content = "Room Id- "+ searchVal;
-                                //     }    
-                                // }
+                                else if (type == 2 )
+                                {
+                                    preferences.forEach(ele => {
+                                        if(ele.rID===searchVal && ele.sessions.includes(element.id)){
+                                            console.log(ele.rID);
+                                            sessionPrintCounter++;
+                                            var lec="";
+                                            element.lecName.forEach(lect => {
+                                                lec=lec+","+lect 
+                                            });
+                                            session = session + "\n " +element.subName+ "--\n"+lec+"\n" +element.groupIdSub+"\n"+element.tag+"\n" +ele.rID;
+                                        }
+                                    });
+                                        
+                                }
                         });
                        }
                     }
                     showArrRow.push(session);
-                    console.log(showArrRow);
                 }
                 showArr.push(showArrRow);
             }
-        setMr(showArr);
-        console.log(showArr);
+        
+        if(sessionPrintCounter==0){
+            while(columns.length > 0) {
+                columns.pop();
+            }
+            childRef.current.handleClickOpen(1);
+        }else{
+            setMr(showArr);
+        }
   }
 }
 }));
@@ -322,25 +406,26 @@ useImperativeHandle(ref, () => ({
     return (
        
     <TableContainer component={Paper}>
-            <Table className={classes.table} aria-label="locations table">
-            <NullError
+         <NullError
       ref={childRef}
       />
+            <Table className={classes.table} aria-label="locations table" >
+           
                 <TableHead>
                     <TableRow>
                         {
                             columns.map(col=>(
-                                <TableCell>{col}</TableCell>
+                                <TableCell key={col}>{col}</TableCell>
                             ))
                         }
                     </TableRow>
                 </TableHead>
                 <TableBody>
-                    {mr.map(row=>(
-                        <TableRow >
-                            {row.map(x=>(
+                    {mr.map((row,index)=>(
+                        <TableRow key={index}>
+                            {row.map((x,index)=>(
                                 
-                                <TableCell>{getLine(x)}</TableCell>
+                                <TableCell key={index}>{getLine(x)}</TableCell>
                             ))}
                         </TableRow>
                     ))}

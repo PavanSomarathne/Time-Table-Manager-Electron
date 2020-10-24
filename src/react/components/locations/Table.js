@@ -1,13 +1,6 @@
 import React from 'react';
 import { makeStyles } from '@material-ui/core/styles';
-import Table from '@material-ui/core/Table';
-import TableBody from '@material-ui/core/TableBody';
-import TableCell from '@material-ui/core/TableCell';
-import TableContainer from '@material-ui/core/TableContainer';
-import TableHead from '@material-ui/core/TableHead';
-import TableRow from '@material-ui/core/TableRow';
-import Paper from '@material-ui/core/Paper';
-import Radio from '@material-ui/core/Radio';
+import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Radio } from '@material-ui/core';
 
 const useStyles = makeStyles((theme) => ({
     row: {
@@ -23,7 +16,7 @@ const useStyles = makeStyles((theme) => ({
     },
 }))
 
-const LocationsTable = ({ locations, loading, handleRadioChange,scheduleUpdated}) => {
+const LocationsTable = ({ locations, loading, handleRadioChange }) => {
     const classes = useStyles();
     const [selectedValue, setSelectedValue] = React.useState('');
 
@@ -34,7 +27,7 @@ const LocationsTable = ({ locations, loading, handleRadioChange,scheduleUpdated}
 
     return (
         <TableContainer component={Paper}>
-            <Table className={classes.table} aria-label="locations table">
+            <Table className={classes.table} aria-label="locations table" size="small">
                 <TableHead>
                     <TableRow>
                         <TableCell>Room ID</TableCell>
